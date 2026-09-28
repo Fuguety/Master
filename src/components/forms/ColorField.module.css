@@ -1,0 +1,29 @@
+.row {
+    display: grid;
+    grid-template-columns: var(--tap-target) minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+.picker,
+.text {
+    min-height: var(--tap-target);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-surface-raised);
+}
+
+.picker {
+    width: var(--tap-target);
+    padding: var(--space-1);
+}
+
+.text {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    color: var(--color-text);
+    font-family: var(--font-family-mono);
+}
+
+.text[aria-invalid='true'] {
+    border-color: var(--color-danger);
+}

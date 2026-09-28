@@ -1,0 +1,69 @@
+.search {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+}
+
+.search > label {
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.inputRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-2);
+}
+
+.inputRow input,
+.inputRow button {
+    min-height: var(--tap-target);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.inputRow input {
+    min-width: 0;
+    padding: var(--space-2) var(--space-3);
+}
+
+.search ul {
+    display: grid;
+    padding: var(--space-1);
+    margin: 0;
+    gap: var(--space-1);
+    list-style: none;
+}
+
+.search li button {
+    display: flex;
+    width: 100%;
+    min-height: var(--tap-target);
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text);
+}
+
+.search li button:hover,
+.search li button[data-active='true'] {
+    border-color: var(--color-primary);
+    background: var(--color-surface-muted);
+}
+
+.search mark {
+    background: color-mix(in srgb, var(--color-primary) 28%, transparent);
+    color: inherit;
+}
+
+.search small {
+    color: var(--color-text-muted);
+}
+

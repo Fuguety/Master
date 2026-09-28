@@ -1,0 +1,13 @@
+.overlay {
+    min-width: 0;
+}
+
+@media (max-width: 48rem) {
+    .overlay {
+        min-width: 0;
+    }
+
+    .overlay > * {
+        width: 100%;
+    }
+}

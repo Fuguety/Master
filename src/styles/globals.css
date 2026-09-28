@@ -1,0 +1,125 @@
+@import './variables.css';
+@import './animations.css';
+@import './utilities.css';
+@import '../themes/modern.css';
+@import '../themes/tron.css';
+@import '../themes/nineties.css';
+@import '../themes/ww2.css';
+@import '../themes/pirate.css';
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    width: 100%;
+    min-width: 20rem;
+    height: 100%;
+    margin: 0;
+}
+
+html {
+    background: var(--color-canvas);
+    font-family: var(--font-family-body);
+    text-size-adjust: 100%;
+}
+
+body {
+    overflow: hidden;
+    background: var(--color-canvas);
+    color: var(--color-text);
+    font-family: var(--font-family-body);
+    line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+    max-width: 100%;
+    font: inherit;
+}
+
+button,
+select,
+input[type='checkbox'],
+input[type='color'],
+input[type='range'] {
+    cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+textarea:disabled {
+    cursor: not-allowed;
+    opacity: 0.62;
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+a {
+    color: var(--color-primary);
+    text-underline-offset: 0.18em;
+}
+
+button:not(:disabled),
+a,
+[role='option'],
+[role='button'] {
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    button,
+    a,
+    [role='option'],
+    [role='button'] {
+        transition-duration: var(--transition-fast);
+    }
+}
+
+::selection {
+    background: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.maplibregl-popup-content {
+    overflow: hidden;
+    padding: 0 !important;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-large) !important;
+    background: var(--color-surface) !important;
+    color: var(--color-text);
+    box-shadow: var(--shadow-large) !important;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: var(--color-surface) !important;
+    border-bottom-color: var(--color-surface) !important;
+}
+
+.maplibregl-ctrl-group {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium) !important;
+    background: var(--color-map-control) !important;
+    box-shadow: var(--shadow-small) !important;
+}
+
+.maplibregl-ctrl-group button {
+    width: var(--tap-target) !important;
+    height: var(--tap-target) !important;
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --color-border: var(--color-text);
+        --color-border-strong: var(--color-text);
+    }
+}

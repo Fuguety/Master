@@ -1,0 +1,19 @@
+.search {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-3);
+}
+
+.advanced {
+    min-width: 0;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+}
+
+.advanced summary {
+    min-height: var(--tap-target);
+    font-weight: 700;
+    cursor: pointer;
+}
+

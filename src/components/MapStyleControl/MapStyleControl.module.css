@@ -1,0 +1,80 @@
+.control {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+}
+
+.control legend {
+    margin-bottom: var(--space-2);
+    font-size: 0.875rem;
+    font-weight: 750;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.options label {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+}
+
+.options label:hover,
+.options label[data-active='true'] {
+    border-color: var(--color-primary);
+}
+
+.options input {
+    position: absolute;
+    opacity: 0;
+}
+
+.options input:focus-visible + span {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+.options strong,
+.options small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.options strong {
+    font-size: 0.8rem;
+}
+
+.options small {
+    color: var(--color-text-muted);
+    font-size: 0.67rem;
+}
+
+.cartographicPreview,
+.satellitePreview {
+    display: block;
+    height: 3.25rem;
+    border-radius: calc(var(--radius-small) / 1.5);
+    background-color: #b9d6e8;
+}
+
+.cartographicPreview {
+    background-image:
+        linear-gradient(32deg, transparent 45%, #ffffff 46% 52%, transparent 53%),
+        linear-gradient(145deg, transparent 46%, #e5a348 47% 51%, transparent 52%);
+}
+
+.satellitePreview {
+    background-image:
+        radial-gradient(circle at 30% 35%, #829b56 0 18%, transparent 19%),
+        radial-gradient(circle at 72% 62%, #244d38 0 22%, transparent 23%),
+        linear-gradient(140deg, #1a465d, #627d43 48%, #a08b5d);
+}

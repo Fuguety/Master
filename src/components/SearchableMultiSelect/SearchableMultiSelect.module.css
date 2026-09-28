@@ -1,0 +1,112 @@
+.field {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.label {
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--tap-target);
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+}
+
+.input:hover:not(:disabled),
+.input:focus-visible {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    outline: none;
+}
+
+.chips {
+    display: flex;
+    gap: var(--space-1);
+    flex-wrap: wrap;
+}
+
+.chip,
+.clear {
+    min-height: 2rem;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised));
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.clear {
+    border-style: dashed;
+    background: transparent;
+    color: var(--color-text-muted);
+}
+
+.chip:hover,
+.clear:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+}
+
+.options {
+    position: absolute;
+    z-index: 35;
+    top: calc(100% + var(--space-1));
+    right: 0;
+    left: 0;
+    max-height: min(18rem, 42vh);
+    overflow-y: auto;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-elevated);
+}
+
+.option {
+    display: flex;
+    min-height: var(--tap-target);
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    cursor: pointer;
+}
+
+.option:hover,
+.option[data-active='true'] {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.option input {
+    width: 1.15rem;
+    height: 1.15rem;
+    accent-color: var(--color-primary);
+}
+
+.empty {
+    margin: 0;
+    padding: var(--space-3);
+    color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .chip,
+    .clear,
+    .option {
+        transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+    }
+}
+

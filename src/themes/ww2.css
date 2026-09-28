@@ -1,0 +1,38 @@
+[data-theme='ww2'] {
+    --font-family-body: Georgia, 'Times New Roman', serif;
+    --font-family-display: 'Arial Narrow', Arial, sans-serif;
+    --color-canvas: #77735b;
+    --color-surface: #e4dcc2;
+    --color-surface-raised: #f0e8d1;
+    --color-surface-muted: #d3cab0;
+    --color-text: #292a20;
+    --color-text-muted: #575746;
+    --color-border: #91896e;
+    --color-border-strong: #4f503e;
+    --color-primary: #365b47;
+    --color-primary-hover: #294636;
+    --color-primary-contrast: #fffced;
+    --color-focus: #9c3d23;
+    --color-success: #3f6547;
+    --color-warning: #805012;
+    --color-danger: #8c3226;
+    --color-danger-hover: #67231b;
+    --color-university: #584775;
+    --color-company: #416751;
+    --color-map-control: rgba(240, 232, 209, 0.96);
+    --color-backdrop: rgba(34, 33, 25, 0.6);
+    --radius-small: 0.15rem;
+    --radius-medium: 0.2rem;
+    --radius-large: 0.25rem;
+    --shadow-small: 0 2px 4px rgba(38, 36, 27, 0.25);
+    --shadow-medium: 0 8px 20px rgba(38, 36, 27, 0.34);
+    --shadow-large: 0 14px 36px rgba(38, 36, 27, 0.42);
+    color-scheme: light;
+}
+
+[data-theme='ww2'] h1,
+[data-theme='ww2'] h2,
+[data-theme='ww2'] h3 {
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}

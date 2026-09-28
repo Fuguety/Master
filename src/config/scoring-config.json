@@ -1,0 +1,220 @@
+{
+    "version": 1,
+    "outputRange": {
+        "minimum": 0,
+        "maximum": 5
+    },
+    "missingValueStrategy": "exclude",
+    "booleanMappings": {
+        "jobPlacementSupport": {
+            "true": 5,
+            "false": 1
+        },
+        "internshipAvailability": {
+            "true": 5,
+            "false": 2
+        }
+    },
+    "categoricalMappings": {
+        "countryTier": {
+            "values": {
+                "tier-1": 5,
+                "tier-2": 4,
+                "tier-3": 3,
+                "tier-4": 2
+            },
+            "default": null
+        },
+        "workModel": {
+            "values": {
+                "remote": 4.5,
+                "hybrid": 5,
+                "on-site": 3.5
+            },
+            "default": null
+        }
+    },
+    "university": {
+        "criteria": [
+            {
+                "field": "locationScore",
+                "label": "Location",
+                "weight": 10,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "qualityOfLife",
+                "label": "Quality of life",
+                "weight": 10,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "affordability",
+                "label": "Affordability",
+                "weight": 10,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "jobOpportunities",
+                "label": "Job opportunities",
+                "weight": 12,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "jobPlacementSupport",
+                "label": "Job-placement support",
+                "weight": 8,
+                "normalization": {
+                    "kind": "boolean",
+                    "mapping": "jobPlacementSupport"
+                }
+            },
+            {
+                "field": "regionalCompanies",
+                "label": "Regional companies",
+                "weight": 8,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "globalReputation",
+                "label": "Global reputation",
+                "weight": 8,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "localReputation",
+                "label": "Local reputation",
+                "weight": 6,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "globalRanking",
+                "label": "Global ranking",
+                "weight": 8,
+                "normalization": {
+                    "kind": "inverse-linear",
+                    "inputMin": 1,
+                    "inputMax": 1000
+                }
+            },
+            {
+                "field": "localRanking",
+                "label": "Local ranking",
+                "weight": 5,
+                "normalization": {
+                    "kind": "inverse-linear",
+                    "inputMin": 1,
+                    "inputMax": 100
+                }
+            },
+            {
+                "field": "commuteQuality",
+                "label": "Commute",
+                "weight": 5,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "countryTier",
+                "label": "Country tier",
+                "weight": 10,
+                "normalization": {
+                    "kind": "categorical",
+                    "mapping": "countryTier"
+                }
+            }
+        ]
+    },
+    "company": {
+        "criteria": [
+            {
+                "field": "payment",
+                "label": "Payment",
+                "weight": 25,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "careerGrowth",
+                "label": "Career growth",
+                "weight": 25,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "locationScore",
+                "label": "Location",
+                "weight": 15,
+                "normalization": {
+                    "kind": "linear",
+                    "inputMin": 0,
+                    "inputMax": 5
+                }
+            },
+            {
+                "field": "countryTier",
+                "label": "Country tier",
+                "weight": 15,
+                "normalization": {
+                    "kind": "categorical",
+                    "mapping": "countryTier"
+                }
+            },
+            {
+                "field": "workModel",
+                "label": "Work model",
+                "weight": 10,
+                "normalization": {
+                    "kind": "categorical",
+                    "mapping": "workModel"
+                }
+            },
+            {
+                "field": "internshipAvailability",
+                "label": "Internship availability",
+                "weight": 10,
+                "normalization": {
+                    "kind": "boolean",
+                    "mapping": "internshipAvailability"
+                }
+            }
+        ]
+    }
+}

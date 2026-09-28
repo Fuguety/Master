@@ -1,0 +1,31 @@
+.settings {
+    display: grid;
+    gap: var(--space-6);
+    padding: var(--space-5);
+}
+
+.settings section {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.settings section + section {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+}
+
+.settings h3,
+.settings p {
+    margin: 0;
+}
+
+.settings h3 {
+    font-family: var(--font-family-display);
+    font-size: 1rem;
+}
+
+.settings section > p {
+    margin-top: calc(var(--space-3) * -1);
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+}

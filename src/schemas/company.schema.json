@@ -1,0 +1,192 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://world-map.local/schemas/company.schema.json",
+    "title": "Company tag",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "type",
+        "name",
+        "coordinates",
+        "city",
+        "country",
+        "countryTier",
+        "payment",
+        "careerGrowth",
+        "locationScore",
+        "workModel",
+        "internshipAvailability",
+        "notes",
+        "sources",
+        "finalRating",
+        "createdAt",
+        "updatedAt"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "type": {
+            "const": "company"
+        },
+        "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+        },
+        "coordinates": {
+            "$ref": "#/$defs/coordinates"
+        },
+        "city": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "country": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "countryCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+        },
+        "countryTier": {
+            "enum": ["tier-1", "tier-2", "tier-3", "tier-4"]
+        },
+        "payment": {
+            "$ref": "#/$defs/nullableScore"
+        },
+        "careerGrowth": {
+            "$ref": "#/$defs/nullableScore"
+        },
+        "locationScore": {
+            "$ref": "#/$defs/nullableScore"
+        },
+        "workModel": {
+            "enum": ["remote", "hybrid", "on-site"]
+        },
+        "internshipAvailability": {
+            "type": ["boolean", "null"]
+        },
+        "industry": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "companyArea": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+        },
+        "notes": {
+            "type": "array",
+            "description": "Note IDs must be unique within this tag; enforced by runtime validation.",
+            "maxItems": 1000,
+            "items": {
+                "$ref": "#/$defs/note"
+            }
+        },
+        "sources": {
+            "type": "array",
+            "description": "Source IDs must be unique within this tag; enforced by runtime validation.",
+            "maxItems": 1000,
+            "items": {
+                "$ref": "#/$defs/source"
+            }
+        },
+        "finalRating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5,
+            "multipleOf": 0.1
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+    },
+    "$defs": {
+        "coordinates": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["longitude", "latitude"],
+            "properties": {
+                "longitude": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180
+                },
+                "latitude": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90
+                }
+            }
+        },
+        "nullableScore": {
+            "type": ["number", "null"],
+            "minimum": 0,
+            "maximum": 5
+        },
+        "note": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "text", "createdAt", "updatedAt"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        },
+        "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "title", "url"],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                },
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://",
+                    "maxLength": 2048
+                },
+                "accessedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            }
+        }
+    }
+}

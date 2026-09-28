@@ -1,0 +1,130 @@
+.layer {
+    position: fixed;
+    z-index: calc(var(--z-panel) + 1);
+    inset: 0;
+    pointer-events: none;
+}
+
+.window {
+    position: absolute;
+    display: flex;
+    width: min(23rem, calc(100vw - 1rem));
+    min-width: 18rem;
+    max-width: min(42rem, calc(100vw - 1rem));
+    max-height: calc(100dvh - 5rem);
+    overflow: hidden;
+    resize: both;
+    flex-direction: column;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-large);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-large);
+    pointer-events: auto;
+    transform-origin: top right;
+    animation: popup-open 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.window[data-minimized='true'] {
+    width: min(18rem, calc(100vw - 1rem));
+    min-width: 0;
+    height: auto !important;
+    resize: none;
+}
+
+.window[data-locked='true'] {
+    resize: none;
+}
+
+.window[data-locked='true'] .titleBar {
+    cursor: not-allowed;
+}
+
+.titleBar {
+    display: flex;
+    min-height: var(--tap-target);
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+}
+
+.titleBar strong {
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.titleBar div {
+    display: flex;
+}
+
+.titleBar button {
+    width: var(--tap-target);
+    height: var(--tap-target);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 1.1rem;
+}
+
+.titleBar button:hover,
+.titleBar button:focus-visible {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.content {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.content > * {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 0;
+}
+
+.window[data-minimized='true'] .content {
+    display: none;
+}
+
+@media (max-width: 48rem) {
+    .window {
+        top: auto !important;
+        right: var(--space-2) !important;
+        bottom: calc(4rem + env(safe-area-inset-bottom) + var(--space-2));
+        left: var(--space-2) !important;
+        width: auto;
+        max-width: none;
+        max-height: calc(100dvh - 8rem);
+        resize: none;
+        transform-origin: bottom center;
+    }
+}
+
+@keyframes popup-open {
+    from {
+        opacity: 0;
+        transform: scale(0.97) translateY(0.35rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .window {
+        animation: none;
+    }
+}

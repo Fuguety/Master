@@ -1,0 +1,50 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://world-map.local/schemas/theme-config.schema.json",
+    "title": "Theme configuration",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["defaultTheme", "themes"],
+    "properties": {
+        "defaultTheme": {
+            "$ref": "#/$defs/themeId"
+        },
+        "themes": {
+            "type": "array",
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "label", "description", "cssClass", "prefersDark"],
+                "properties": {
+                    "id": {
+                        "$ref": "#/$defs/themeId"
+                    },
+                    "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 80
+                    },
+                    "description": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                    },
+                    "cssClass": {
+                        "type": "string",
+                        "pattern": "^theme-[a-z0-9-]+$"
+                    },
+                    "prefersDark": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        }
+    },
+    "$defs": {
+        "themeId": {
+            "enum": ["modern", "tron", "nineties", "ww2", "pirate"]
+        }
+    }
+}

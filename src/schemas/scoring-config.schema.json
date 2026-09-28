@@ -1,0 +1,279 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://world-map.local/schemas/scoring-config.schema.json",
+    "title": "Scoring configuration",
+    "description": "Editable scoring rules. The application additionally requires unique fields per model and valid named mapping references.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "version",
+        "outputRange",
+        "missingValueStrategy",
+        "booleanMappings",
+        "categoricalMappings",
+        "university",
+        "company"
+    ],
+    "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "outputRange": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["minimum", "maximum"],
+            "properties": {
+                "minimum": { "type": "number", "minimum": 0, "maximum": 5 },
+                "maximum": { "type": "number", "minimum": 0, "maximum": 5 }
+            }
+        },
+        "missingValueStrategy": { "const": "exclude" },
+        "booleanMappings": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/booleanMapping" }
+        },
+        "categoricalMappings": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/categoryMapping" }
+        },
+        "university": { "$ref": "#/$defs/universityModel" },
+        "company": { "$ref": "#/$defs/companyModel" }
+    },
+    "$defs": {
+        "outputScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+        },
+        "booleanMapping": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["true", "false"],
+            "properties": {
+                "true": { "$ref": "#/$defs/outputScore" },
+                "false": { "$ref": "#/$defs/outputScore" }
+            }
+        },
+        "categoryMapping": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["values", "default"],
+            "properties": {
+                "values": {
+                    "type": "object",
+                    "additionalProperties": { "$ref": "#/$defs/outputScore" }
+                },
+                "default": {
+                    "oneOf": [{ "$ref": "#/$defs/outputScore" }, { "type": "null" }]
+                }
+            }
+        },
+        "linearNormalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "inputMin", "inputMax"],
+            "properties": {
+                "kind": { "const": "linear" },
+                "inputMin": { "type": "number" },
+                "inputMax": { "type": "number" }
+            }
+        },
+        "inverseNormalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "inputMin", "inputMax"],
+            "properties": {
+                "kind": { "const": "inverse-linear" },
+                "inputMin": { "type": "number" },
+                "inputMax": { "type": "number" }
+            }
+        },
+        "booleanNormalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "mapping"],
+            "properties": {
+                "kind": { "const": "boolean" },
+                "mapping": { "type": "string", "minLength": 1 }
+            }
+        },
+        "categoricalNormalization": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "mapping"],
+            "properties": {
+                "kind": { "const": "categorical" },
+                "mapping": { "type": "string", "minLength": 1 }
+            }
+        },
+        "normalization": {
+            "oneOf": [
+                { "$ref": "#/$defs/linearNormalization" },
+                { "$ref": "#/$defs/inverseNormalization" },
+                { "$ref": "#/$defs/booleanNormalization" },
+                { "$ref": "#/$defs/categoricalNormalization" }
+            ]
+        },
+        "universityModel": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criteria"],
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/universityCriterion" }
+                }
+            }
+        },
+        "companyModel": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["criteria"],
+            "properties": {
+                "criteria": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/companyCriterion" }
+                }
+            }
+        },
+        "universityCriterion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "label", "weight", "normalization"],
+            "properties": {
+                "field": {
+                    "enum": [
+                        "locationScore",
+                        "qualityOfLife",
+                        "affordability",
+                        "jobOpportunities",
+                        "jobPlacementSupport",
+                        "regionalCompanies",
+                        "globalReputation",
+                        "localReputation",
+                        "globalRanking",
+                        "localRanking",
+                        "commuteQuality",
+                        "countryTier"
+                    ]
+                },
+                "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+                "weight": { "type": "number", "exclusiveMinimum": 0 },
+                "normalization": { "$ref": "#/$defs/normalization" }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "field": { "const": "jobPlacementSupport" } } },
+                    "then": {
+                        "properties": {
+                            "normalization": { "$ref": "#/$defs/booleanNormalization" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "field": { "const": "countryTier" } } },
+                    "then": {
+                        "properties": {
+                            "normalization": { "$ref": "#/$defs/categoricalNormalization" }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": { "field": { "enum": ["globalRanking", "localRanking"] } }
+                    },
+                    "then": {
+                        "properties": {
+                            "normalization": { "$ref": "#/$defs/inverseNormalization" }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "field": {
+                                "enum": [
+                                    "locationScore",
+                                    "qualityOfLife",
+                                    "affordability",
+                                    "jobOpportunities",
+                                    "regionalCompanies",
+                                    "globalReputation",
+                                    "localReputation",
+                                    "globalRanking",
+                                    "localRanking",
+                                    "commuteQuality"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "normalization": {
+                                "oneOf": [
+                                    { "$ref": "#/$defs/linearNormalization" },
+                                    { "$ref": "#/$defs/inverseNormalization" }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "companyCriterion": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["field", "label", "weight", "normalization"],
+            "properties": {
+                "field": {
+                    "enum": [
+                        "payment",
+                        "careerGrowth",
+                        "locationScore",
+                        "countryTier",
+                        "workModel",
+                        "internshipAvailability"
+                    ]
+                },
+                "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+                "weight": { "type": "number", "exclusiveMinimum": 0 },
+                "normalization": { "$ref": "#/$defs/normalization" }
+            },
+            "allOf": [
+                {
+                    "if": { "properties": { "field": { "const": "internshipAvailability" } } },
+                    "then": {
+                        "properties": {
+                            "normalization": { "$ref": "#/$defs/booleanNormalization" }
+                        }
+                    }
+                },
+                {
+                    "if": { "properties": { "field": { "enum": ["countryTier", "workModel"] } } },
+                    "then": {
+                        "properties": {
+                            "normalization": { "$ref": "#/$defs/categoricalNormalization" }
+                        }
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "field": { "enum": ["payment", "careerGrowth", "locationScore"] }
+                        }
+                    },
+                    "then": {
+                        "properties": {
+                            "normalization": {
+                                "oneOf": [
+                                    { "$ref": "#/$defs/linearNormalization" },
+                                    { "$ref": "#/$defs/inverseNormalization" }
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

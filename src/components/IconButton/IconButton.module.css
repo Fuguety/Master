@@ -1,0 +1,28 @@
+.button {
+    display: inline-grid;
+    width: var(--tap-target);
+    min-width: var(--tap-target);
+    height: var(--tap-target);
+    padding: 0;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: currentColor;
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+.button:hover:not(:disabled),
+.button[aria-pressed='true'] {
+    border-color: var(--color-border);
+    background: var(--color-surface-muted);
+    color: var(--color-primary);
+}
+
+.button > svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}

@@ -1,0 +1,45 @@
+.handle {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    right: -0.3rem;
+    bottom: 0;
+    width: 0.65rem;
+    cursor: ew-resize;
+    touch-action: none;
+}
+
+.handle::after {
+    position: absolute;
+    top: 0;
+    right: 0.25rem;
+    bottom: 0;
+    width: 2px;
+    background: var(--color-primary);
+    content: '';
+    opacity: 0;
+}
+
+.handle:hover::after,
+.handle:focus-visible::after {
+    opacity: 1;
+}
+
+.resizing,
+.resizing * {
+    cursor: ew-resize !important;
+    user-select: none !important;
+}
+
+@media (max-width: 48rem) {
+    .handle {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .handle::after {
+        transition: opacity var(--transition-fast);
+    }
+}
+

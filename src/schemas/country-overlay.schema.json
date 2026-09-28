@@ -1,0 +1,53 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://world-map.local/schemas/country-overlay.schema.json",
+    "title": "Country overlay",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "countryCode",
+        "countryName",
+        "color",
+        "opacity",
+        "isVisible",
+        "notes",
+        "updatedAt"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "countryCode": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+        },
+        "countryName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+        },
+        "color": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "opacity": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "isVisible": {
+            "type": "boolean"
+        },
+        "notes": {
+            "type": "string",
+            "maxLength": 2000
+        },
+        "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+    }
+}

@@ -1,0 +1,82 @@
+.control {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+}
+
+.control legend {
+    margin-bottom: var(--space-2);
+    font-size: 0.875rem;
+    font-weight: 750;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.options label {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+}
+
+.options label:has(input:checked) {
+    border-color: var(--color-primary);
+    background: var(--color-surface-muted);
+}
+
+.options input {
+    position: absolute;
+    inset: var(--space-2) var(--space-2) auto auto;
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--color-primary);
+}
+
+.options svg {
+    width: 1.6rem;
+    height: 1.6rem;
+}
+
+.options label[data-type='university'] svg {
+    color: var(--color-university);
+}
+
+.options label[data-type='company'] svg {
+    color: var(--color-company);
+}
+
+.options label[data-type='note'] svg {
+    color: var(--color-primary);
+}
+
+.options span {
+    display: grid;
+    min-width: 0;
+}
+
+.options strong {
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.options small {
+    color: var(--color-text-muted);
+    font-size: 0.68rem;
+}
+
+@media (max-width: 25rem) {
+    .options {
+        grid-template-columns: 1fr;
+    }
+}

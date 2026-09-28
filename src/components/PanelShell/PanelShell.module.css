@@ -1,0 +1,66 @@
+.panel {
+    position: fixed;
+    z-index: var(--z-panel);
+    inset: var(--header-height) auto 0 var(--tool-rail-width);
+    display: flex;
+    width: var(--resizable-width, var(--panel-width));
+    flex-direction: column;
+    border-right: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--shadow-medium);
+    animation: panel-enter var(--transition-medium);
+}
+
+.panelContent {
+    display: flex;
+    min-width: 0;
+    height: 100%;
+    flex-direction: column;
+}
+
+.header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+}
+
+.header h2,
+.header p {
+    margin: 0;
+}
+
+.header h2 {
+    font-family: var(--font-family-display);
+    font-size: 1.2rem;
+}
+
+.header p {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+}
+
+.body {
+    min-width: 0;
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.footer {
+    padding: var(--space-3) var(--space-5);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+}
+
+@media (max-width: 48rem) {
+    .panel {
+        display: none;
+    }
+}

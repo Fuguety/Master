@@ -1,0 +1,17 @@
+[
+    {
+        "id": "note-example-porto",
+        "type": "note",
+        "name": "Explore Porto opportunities",
+        "content": "Review universities and technology employers near the city centre.",
+        "color": "#f4c95d",
+        "country": "Portugal",
+        "countryCode": "PRT",
+        "city": "Porto",
+        "coordinates": { "longitude": -8.6291, "latitude": 41.1579 },
+        "sources": [],
+        "locked": false,
+        "createdAt": "2026-01-15T12:00:00.000Z",
+        "updatedAt": "2026-01-15T12:00:00.000Z"
+    }
+]

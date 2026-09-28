@@ -1,0 +1,36 @@
+[data-theme='tron'] {
+    --font-family-body: 'Trebuchet MS', ui-sans-serif, system-ui, sans-serif;
+    --font-family-display: var(--font-family-mono);
+    --color-canvas: #020712;
+    --color-surface: #071423;
+    --color-surface-raised: #0a1c2f;
+    --color-surface-muted: #0c2538;
+    --color-text: #e7fbff;
+    --color-text-muted: #9fcad3;
+    --color-border: #176f82;
+    --color-border-strong: #1de2ff;
+    --color-primary: #00cbe8;
+    --color-primary-hover: #63edff;
+    --color-primary-contrast: #001217;
+    --color-focus: #ffe552;
+    --color-success: #4bf0a3;
+    --color-warning: #ffbd4a;
+    --color-danger: #ff4f81;
+    --color-danger-hover: #ff87a6;
+    --color-danger-contrast: #18000a;
+    --color-university: #be6cff;
+    --color-company: #00e8b7;
+    --color-map-control: rgba(5, 22, 35, 0.96);
+    --color-backdrop: rgba(0, 4, 12, 0.76);
+    --radius-small: 0.15rem;
+    --radius-medium: 0.25rem;
+    --radius-large: 0.35rem;
+    --shadow-small: 0 0 0.8rem rgba(0, 203, 232, 0.18);
+    --shadow-medium: 0 0 1.8rem rgba(0, 203, 232, 0.22);
+    --shadow-large: 0 0 2.8rem rgba(0, 203, 232, 0.28);
+    color-scheme: dark;
+}
+
+[data-theme='tron'] :is(button, input, select, textarea) {
+    letter-spacing: 0.025em;
+}

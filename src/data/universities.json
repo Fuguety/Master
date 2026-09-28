@@ -1,0 +1,81 @@
+[
+    {
+        "id": "university-mit-cambridge",
+        "type": "university",
+        "name": "Massachusetts Institute of Technology",
+        "coordinates": {
+            "longitude": -71.0921,
+            "latitude": 42.3601
+        },
+        "city": "Cambridge",
+        "country": "United States",
+        "countryCode": "USA",
+        "countryTier": "tier-1",
+        "locationScore": 4.7,
+        "qualityOfLife": 4.4,
+        "affordability": 2.2,
+        "jobOpportunities": 5,
+        "jobPlacementSupport": true,
+        "regionalCompanies": 5,
+        "globalReputation": 5,
+        "localReputation": 5,
+        "globalRanking": 1,
+        "localRanking": 1,
+        "commuteQuality": 4,
+        "notes": [
+            {
+                "id": "note-mit-example",
+                "text": "Example research record. Verify costs and rankings against current primary sources.",
+                "createdAt": "2026-08-01T12:00:00.000Z",
+                "updatedAt": "2026-08-01T12:00:00.000Z"
+            }
+        ],
+        "sources": [
+            {
+                "id": "source-mit-home",
+                "title": "Official university website",
+                "url": "https://www.mit.edu/",
+                "accessedAt": "2026-08-01T12:00:00.000Z"
+            }
+        ],
+        "finalRating": 4.6,
+        "createdAt": "2026-08-01T12:00:00.000Z",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    },
+    {
+        "id": "university-usp-sao-paulo",
+        "type": "university",
+        "name": "University of São Paulo",
+        "coordinates": {
+            "longitude": -46.7309,
+            "latitude": -23.5614
+        },
+        "city": "São Paulo",
+        "country": "Brazil",
+        "countryCode": "BRA",
+        "countryTier": "tier-2",
+        "locationScore": 4.4,
+        "qualityOfLife": 4.1,
+        "affordability": 4.2,
+        "jobOpportunities": 4.4,
+        "jobPlacementSupport": true,
+        "regionalCompanies": 4.7,
+        "globalReputation": 4.5,
+        "localReputation": 5,
+        "globalRanking": 85,
+        "localRanking": 1,
+        "commuteQuality": 3.2,
+        "notes": [],
+        "sources": [
+            {
+                "id": "source-usp-home",
+                "title": "Official university website",
+                "url": "https://www.usp.br/",
+                "accessedAt": "2026-08-01T12:00:00.000Z"
+            }
+        ],
+        "finalRating": 4.4,
+        "createdAt": "2026-08-01T12:00:00.000Z",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    }
+]

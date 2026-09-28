@@ -1,0 +1,54 @@
+.navigation {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-4);
+}
+
+.navigation button {
+    display: grid;
+    min-height: var(--tap-target);
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    text-align: left;
+}
+
+.navigation button:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-muted);
+}
+
+.icon {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: var(--radius-small);
+    background: var(--color-surface-muted);
+    color: var(--color-primary);
+    font-size: 1.15rem;
+}
+
+.text {
+    display: grid;
+}
+
+.text small {
+    color: var(--color-text-muted);
+}
+
+.badge {
+    min-width: 1.5rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: center;
+}

@@ -1,0 +1,7 @@
+.companyForm {
+    min-height: 100%;
+}
+
+.companyForm > form > header > span {
+    color: var(--color-company);
+}

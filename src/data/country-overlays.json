@@ -1,0 +1,22 @@
+[
+    {
+        "id": "overlay-brazil",
+        "countryCode": "BRA",
+        "countryName": "Brazil",
+        "color": "#16a34a",
+        "opacity": 0.32,
+        "isVisible": true,
+        "notes": "Example country highlight.",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    },
+    {
+        "id": "overlay-germany",
+        "countryCode": "DEU",
+        "countryName": "Germany",
+        "color": "#2563eb",
+        "opacity": 0.28,
+        "isVisible": true,
+        "notes": "Example country highlight.",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    }
+]

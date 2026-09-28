@@ -1,0 +1,19 @@
+.noteForm {
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.advanced {
+    grid-column: 1 / -1;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+}
+
+.advanced summary {
+    min-height: var(--tap-target);
+    color: var(--color-text);
+    font-weight: 700;
+    cursor: pointer;
+}
+

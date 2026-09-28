@@ -1,0 +1,7 @@
+.universityForm {
+    min-height: 100%;
+}
+
+.universityForm > form > header > span {
+    color: var(--color-university);
+}

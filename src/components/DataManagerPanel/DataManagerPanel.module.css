@@ -1,0 +1,77 @@
+.panel {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+}
+
+.panel section {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+}
+
+.heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--space-3);
+}
+
+.heading > span {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: var(--radius-small);
+    background: var(--color-surface-muted);
+    color: var(--color-primary);
+    font-size: 1.25rem;
+}
+
+.heading h3,
+.heading p,
+.warning,
+.meta,
+.status {
+    margin: 0;
+}
+
+.heading h3 {
+    font-family: var(--font-family-display);
+    font-size: 1rem;
+}
+
+.heading p,
+.meta {
+    color: var(--color-text-muted);
+    font-size: 0.76rem;
+}
+
+.warning {
+    padding: var(--space-2) var(--space-3);
+    border-left: 3px solid var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+    color: var(--color-warning);
+    font-size: 0.78rem;
+}
+
+.hiddenInput {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.panel section > button {
+    justify-self: start;
+}
+
+.status {
+    padding: var(--space-3);
+    border-radius: var(--radius-small);
+    background: var(--color-surface-muted);
+    font-size: 0.8rem;
+}

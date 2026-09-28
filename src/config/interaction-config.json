@@ -1,0 +1,8 @@
+{
+    "createTagMode": {
+        "exitAfterPlacement": true
+    },
+    "countrySelection": {
+        "closeOnRepeatedBrowseClick": true
+    }
+}

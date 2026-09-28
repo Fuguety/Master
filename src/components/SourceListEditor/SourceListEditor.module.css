@@ -1,0 +1,90 @@
+.editor {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.headingRow h3,
+.headingRow p,
+.empty {
+    margin: 0;
+}
+
+.validation {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 0.8rem;
+}
+
+.headingRow h3 {
+    font-family: var(--font-family-display);
+    font-size: 1rem;
+}
+
+.headingRow p,
+.empty {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+}
+
+.list {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.source {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-small);
+    background: var(--color-surface-muted);
+}
+
+.sourceText {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-1);
+}
+
+.sourceText a,
+.sourceText span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sourceText span {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+}
+
+.actions button {
+    min-height: 2rem;
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.78rem;
+}
+
+.form {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 30rem) {
+    .source {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}

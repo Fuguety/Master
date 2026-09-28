@@ -1,0 +1,74 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://atlas-notebook.local/schemas/country-data.schema.json",
+    "title": "Bundled Atlas sovereign-country dataset",
+    "type": "array",
+    "minItems": 195,
+    "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+            "iso2", "iso3", "englishName", "nativeName", "officialName", "alternativeNames",
+            "capital", "population", "areaKm2", "currency", "languages", "continent", "region",
+            "subregion", "countryTier", "natoMember", "minimumMonthlyWage", "coordinates",
+            "lastUpdated", "dataSource"
+        ],
+        "properties": {
+            "iso2": { "type": "string", "pattern": "^[A-Z]{2}$" },
+            "iso3": { "type": "string", "pattern": "^[A-Z]{3}$" },
+            "englishName": { "type": "string", "minLength": 1 },
+            "nativeName": { "type": "string", "minLength": 1 },
+            "officialName": { "type": "string", "minLength": 1 },
+            "alternativeNames": { "type": "array", "items": { "type": "string" } },
+            "capital": { "type": ["string", "null"] },
+            "population": { "type": ["integer", "null"], "minimum": 0 },
+            "areaKm2": { "type": ["number", "null"], "minimum": 0 },
+            "currency": {
+                "anyOf": [
+                    { "type": "null" },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["code", "name", "symbol"],
+                        "properties": {
+                            "code": { "type": "string", "minLength": 3, "maxLength": 3 },
+                            "name": { "type": "string", "minLength": 1 },
+                            "symbol": { "type": ["string", "null"] }
+                        }
+                    }
+                ]
+            },
+            "languages": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+            "continent": { "type": "string", "minLength": 1 },
+            "region": { "type": "string", "minLength": 1 },
+            "subregion": { "type": "string" },
+            "countryTier": { "type": ["string", "null"] },
+            "natoMember": { "type": "boolean" },
+            "minimumMonthlyWage": {
+                "anyOf": [
+                    { "type": "null" },
+                    {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["value", "currency"],
+                        "properties": {
+                            "value": { "type": "number", "minimum": 0 },
+                            "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+                        }
+                    }
+                ]
+            },
+            "coordinates": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["latitude", "longitude"],
+                "properties": {
+                    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+                    "longitude": { "type": "number", "minimum": -180, "maximum": 180 }
+                }
+            },
+            "lastUpdated": { "type": "string", "format": "date" },
+            "dataSource": { "type": "string", "minLength": 1 }
+        }
+    }
+}

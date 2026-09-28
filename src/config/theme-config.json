@@ -1,0 +1,40 @@
+{
+    "defaultTheme": "modern",
+    "themes": [
+        {
+            "id": "modern",
+            "label": "Modern",
+            "description": "A calm, contemporary interface with high-contrast neutral surfaces.",
+            "cssClass": "theme-modern",
+            "prefersDark": false
+        },
+        {
+            "id": "tron",
+            "label": "Neon Grid",
+            "description": "A dark futuristic interface with original cyan and magenta accents.",
+            "cssClass": "theme-tron",
+            "prefersDark": true
+        },
+        {
+            "id": "nineties",
+            "label": "1990s Web",
+            "description": "A playful, accessible interpretation of early personal web pages.",
+            "cssClass": "theme-nineties",
+            "prefersDark": false
+        },
+        {
+            "id": "ww2",
+            "label": "Field Archive",
+            "description": "An original historical field-desk treatment using paper and ink tones.",
+            "cssClass": "theme-ww2",
+            "prefersDark": false
+        },
+        {
+            "id": "pirate",
+            "label": "Nautical Chart",
+            "description": "An original sea-chart treatment with parchment and ocean colors.",
+            "cssClass": "theme-pirate",
+            "prefersDark": false
+        }
+    ]
+}

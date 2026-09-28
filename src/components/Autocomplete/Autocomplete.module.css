@@ -1,0 +1,96 @@
+.field {
+    position: relative;
+    display: grid;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.required {
+    color: var(--color-danger);
+}
+
+.input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--tap-target);
+    padding: 0.6rem 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-small);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    text-overflow: ellipsis;
+}
+
+.input:hover:not(:disabled),
+.input:focus-visible {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    outline: none;
+}
+
+.popover {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + var(--space-1));
+    right: 0;
+    left: 0;
+    max-height: min(18rem, 40vh);
+    overflow-y: auto;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+    box-shadow: var(--shadow-elevated);
+}
+
+.option {
+    display: grid;
+    width: 100%;
+    min-height: var(--tap-target);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: var(--color-text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.option small {
+    color: var(--color-text-muted);
+}
+
+.option mark {
+    background: color-mix(in srgb, var(--color-primary) 28%, transparent);
+    color: inherit;
+    font-weight: 800;
+}
+
+.option:hover,
+.option[aria-selected='true'] {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-surface-raised));
+}
+
+.status {
+    margin: 0;
+    padding: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+}
+
+.error {
+    margin: 0;
+    color: var(--color-danger);
+    font-size: 0.78rem;
+}

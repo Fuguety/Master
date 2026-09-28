@@ -1,0 +1,37 @@
+[data-theme='pirate'] {
+    --font-family-body: Georgia, 'Times New Roman', serif;
+    --font-family-display: Georgia, 'Times New Roman', serif;
+    --color-canvas: #103f4a;
+    --color-surface: #f1dfb8;
+    --color-surface-raised: #faebca;
+    --color-surface-muted: #dfc99f;
+    --color-text: #302217;
+    --color-text-muted: #66523f;
+    --color-border: #9e7d52;
+    --color-border-strong: #604627;
+    --color-primary: #8c371f;
+    --color-primary-hover: #692718;
+    --color-primary-contrast: #fff8e8;
+    --color-focus: #006e84;
+    --color-success: #346641;
+    --color-warning: #8d5609;
+    --color-danger: #9d291f;
+    --color-danger-hover: #6d1a14;
+    --color-university: #624792;
+    --color-company: #1f725f;
+    --color-map-control: rgba(250, 235, 202, 0.96);
+    --color-backdrop: rgba(17, 29, 29, 0.66);
+    --radius-small: 0.25rem;
+    --radius-medium: 0.55rem;
+    --radius-large: 0.8rem;
+    --shadow-small: 0 3px 8px rgba(47, 29, 15, 0.22);
+    --shadow-medium: 0 12px 28px rgba(47, 29, 15, 0.3);
+    --shadow-large: 0 20px 48px rgba(30, 23, 16, 0.38);
+    color-scheme: light;
+}
+
+[data-theme='pirate'] h1,
+[data-theme='pirate'] h2,
+[data-theme='pirate'] h3 {
+    letter-spacing: 0.025em;
+}

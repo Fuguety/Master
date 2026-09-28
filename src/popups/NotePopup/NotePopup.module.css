@@ -1,0 +1,73 @@
+.note {
+    display: flex;
+    min-width: 18rem;
+    max-height: min(38rem, calc(100dvh - 7rem));
+    flex-direction: column;
+    background: color-mix(in srgb, var(--note-color) 28%, var(--color-surface));
+    color: var(--color-text);
+}
+
+.note header {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border-strong);
+    background: color-mix(in srgb, var(--note-color) 52%, var(--color-surface-raised));
+}
+
+.note header svg {
+    width: 2rem;
+    color: var(--color-text);
+}
+
+.note header p,
+.note header h2,
+.note header span,
+.content p {
+    margin: 0;
+}
+
+.note header h2 {
+    overflow-wrap: anywhere;
+    font-family: var(--font-family-display);
+    font-size: 1.05rem;
+}
+
+.note header p,
+.note header span,
+.content small {
+    color: var(--color-text-muted);
+    font-size: 0.74rem;
+}
+
+.note header button {
+    width: var(--tap-target);
+    height: var(--tap-target);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 1.4rem;
+}
+
+.content {
+    display: grid;
+    min-height: 8rem;
+    overflow: auto;
+    gap: var(--space-3);
+    padding: var(--space-4);
+}
+
+.content p {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.note footer {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-top: 1px solid var(--color-border-strong);
+    flex-wrap: wrap;
+}
+

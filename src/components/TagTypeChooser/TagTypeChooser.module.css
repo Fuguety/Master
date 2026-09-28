@@ -1,0 +1,109 @@
+.chooser {
+    display: grid;
+    gap: var(--space-5);
+    padding: var(--space-5);
+    background: var(--color-surface);
+}
+
+.chooser header p,
+.chooser header h2,
+.chooser header span {
+    margin: 0;
+}
+
+.chooser header p {
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.chooser header h2 {
+    margin-top: var(--space-1);
+    font-family: var(--font-family-display);
+    font-size: 1.35rem;
+}
+
+.chooser header span {
+    display: block;
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.option {
+    display: grid;
+    min-height: 10rem;
+    align-content: center;
+    justify-items: start;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    text-align: start;
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        transform var(--transition-fast);
+}
+
+.option:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-muted);
+    transform: translateY(-2px);
+}
+
+.option svg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.option[data-type='university'] svg {
+    color: var(--color-university);
+}
+
+.option[data-type='company'] svg {
+    color: var(--color-company);
+}
+
+.option[data-type='note'] svg {
+    color: var(--color-primary);
+}
+
+.option strong {
+    font-family: var(--font-family-display);
+    font-size: 1rem;
+}
+
+.option span {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+}
+
+.chooser > button {
+    justify-self: start;
+}
+
+@media (max-width: 30rem) {
+    .chooser {
+        padding: var(--space-4);
+    }
+
+    .options {
+        grid-template-columns: 1fr;
+    }
+
+    .option {
+        min-height: 7rem;
+    }
+}

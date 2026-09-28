@@ -1,0 +1,134 @@
+.header {
+    position: fixed;
+    z-index: var(--z-header);
+    inset: 0 0 auto;
+    display: flex;
+    height: var(--header-height);
+    align-items: center;
+    gap: var(--space-4);
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    color: var(--color-text);
+    box-shadow: var(--shadow-small);
+    backdrop-filter: blur(14px);
+}
+
+.menuButton {
+    display: none;
+}
+
+.brand {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.brandMark {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: var(--radius-medium);
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    font-family: var(--font-family-display);
+    font-weight: 900;
+}
+
+.brand h1,
+.brand p {
+    overflow: hidden;
+    margin: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.brand h1 {
+    font-family: var(--font-family-display);
+    font-size: 1.05rem;
+    line-height: 1.25;
+}
+
+.brand p {
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+}
+
+.counts {
+    display: flex;
+    gap: var(--space-4);
+    margin: 0 0 0 auto;
+}
+
+.counts div {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+}
+
+.counts dt {
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+}
+
+.counts dd {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.saveStatus {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+}
+
+.saveStatus > span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-success);
+}
+
+.saveStatus[data-status='saving'] > span {
+    animation: pulse-ring 1.4s infinite;
+    background: var(--color-warning);
+}
+
+.saveStatus[data-status='error'] {
+    color: var(--color-danger);
+}
+
+.saveStatus[data-status='error'] > span {
+    background: var(--color-danger);
+}
+
+@media (max-width: 48rem) {
+    .header {
+        gap: var(--space-2);
+        padding-inline: var(--space-2);
+    }
+
+    .menuButton {
+        display: inline-grid;
+    }
+
+    .brand p,
+    .counts,
+    .saveStatus {
+        display: none;
+    }
+
+    .brand {
+        flex: 1;
+    }
+
+    .brandMark {
+        width: 2rem;
+        height: 2rem;
+    }
+}

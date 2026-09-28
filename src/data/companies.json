@@ -1,0 +1,66 @@
+[
+    {
+        "id": "company-northstar-berlin",
+        "type": "company",
+        "name": "Northstar Analytics",
+        "coordinates": {
+            "longitude": 13.405,
+            "latitude": 52.52
+        },
+        "city": "Berlin",
+        "country": "Germany",
+        "countryCode": "DEU",
+        "countryTier": "tier-1",
+        "payment": 4.4,
+        "careerGrowth": 4.6,
+        "locationScore": 4.5,
+        "workModel": "hybrid",
+        "internshipAvailability": true,
+        "industry": "Technology",
+        "companyArea": "Data analytics",
+        "notes": [
+            {
+                "id": "note-northstar-example",
+                "text": "Fictional example company for demonstrating the data model.",
+                "createdAt": "2026-08-01T12:00:00.000Z",
+                "updatedAt": "2026-08-01T12:00:00.000Z"
+            }
+        ],
+        "sources": [],
+        "finalRating": 4.7,
+        "createdAt": "2026-08-01T12:00:00.000Z",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    },
+    {
+        "id": "company-verde-sao-paulo",
+        "type": "company",
+        "name": "Verde Mobility Labs",
+        "coordinates": {
+            "longitude": -46.6333,
+            "latitude": -23.5505
+        },
+        "city": "São Paulo",
+        "country": "Brazil",
+        "countryCode": "BRA",
+        "countryTier": "tier-2",
+        "payment": 4,
+        "careerGrowth": 4.5,
+        "locationScore": 4.2,
+        "workModel": "on-site",
+        "internshipAvailability": false,
+        "industry": "Transportation",
+        "companyArea": "Electric mobility",
+        "notes": [
+            {
+                "id": "note-verde-example",
+                "text": "Fictional example company for demonstrating filters and scoring.",
+                "createdAt": "2026-08-01T12:00:00.000Z",
+                "updatedAt": "2026-08-01T12:00:00.000Z"
+            }
+        ],
+        "sources": [],
+        "finalRating": 3.9,
+        "createdAt": "2026-08-01T12:00:00.000Z",
+        "updatedAt": "2026-08-01T12:00:00.000Z"
+    }
+]
