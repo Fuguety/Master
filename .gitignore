@@ -1,10 +1,39 @@
+# Dependencies and generated output
 node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+
+# Tool caches
+.cache/
+.eslintcache
+.vite/
+.vitest/
+
+# Logs and local runtime files
+*.log
+*.local
+.vite-dev*.log
+
+# Environment files (keep the documented template)
 .env
 .env.*
 !.env.example
+
+# Local browser and Codex workspace data
+.edge-codex-profile/
+.agents/
+
+# Editor settings
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Operating-system metadata
 .DS_Store
 Thumbs.db
-*.log
+Desktop.ini
