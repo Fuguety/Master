@@ -116,7 +116,7 @@ export class SupabaseSharedDatasetClient
     public constructor(
         projectUrl: string | undefined,
         anonymousKey: string | undefined,
-        fetchImplementation: FetchImplementation = fetch,
+        fetchImplementation: FetchImplementation = fetch.bind(globalThis),
     )
     {
         this.projectUrl = (projectUrl ?? '').replace(/\/$/u, '');
