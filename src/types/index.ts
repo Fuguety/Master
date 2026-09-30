@@ -26,7 +26,7 @@ export type {
     ScoringConfig,
 } from "./scoring";
 export type { ThemeConfig, ThemeDefinition, ThemeId } from "./theme";
-export type { UniversityScoreField, UniversityScoreInput, UniversityTag } from "./university";
+export type { PapisStatus, UniversityScoreField, UniversityScoreInput, UniversityTag } from "./university";
 
 import type { CompanyTag } from "./company";
 import type { UniversityTag } from "./university";

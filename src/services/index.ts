@@ -5,3 +5,4 @@ export * from "./countryInformation/CountryInformationService";
 export * from "./currency/CurrencyConversionService";
 export * from "./countryTags/CountryTagQueryService";
 export * from "./mapViewport/MapViewportCoordinator";
+export * from "./sharedDataset";

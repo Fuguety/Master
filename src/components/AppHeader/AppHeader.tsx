@@ -1,12 +1,17 @@
 import { IconButton } from "../IconButton/IconButton";
+import { Button } from "../Button/Button";
 import styles from "./AppHeader.module.css";
 
 export interface AppHeaderProps
 {
     companyCount: number;
+    isDirty?: boolean;
+    isAdmin?: boolean;
+    onOpenAdmin: () => void;
     onOpenMenu: () => void;
     onOpenSettings: () => void;
-    saveStatus?: "saved" | "saving" | "error";
+    onSave: () => void;
+    saveStatus?: "saved" | "dirty" | "loading" | "saving" | "error";
     title?: string;
     universityCount: number;
 }
@@ -18,18 +23,26 @@ export interface AppHeaderProps
  */
 export function AppHeader({
     companyCount,
+    isDirty = false,
+    isAdmin = false,
+    onOpenAdmin,
     onOpenMenu,
     onOpenSettings,
+    onSave,
     saveStatus = "saved",
     title = "Atlas Notebook",
     universityCount,
 }: AppHeaderProps)
 {
-    const statusLabel = saveStatus === "saving"
-        ? "Saving changes"
+    const statusLabel = saveStatus === "loading"
+        ? "Loading shared data"
+        : saveStatus === "saving"
+        ? "Saving shared data"
         : saveStatus === "error"
-            ? "Save failed"
-            : "All changes saved";
+            ? "Shared data error"
+            : saveStatus === "dirty"
+                ? isAdmin ? "Ready to publish" : "Local changes"
+                : "Shared data current";
 
     return (
         <header className={styles.header}>
@@ -57,6 +70,19 @@ export function AppHeader({
                 <span aria-hidden="true" />
                 {statusLabel}
             </span>
+            {isAdmin ? (
+                <Button
+                    className={styles.saveButton}
+                    disabled={!isDirty || saveStatus === "saving" || saveStatus === "loading"}
+                    onClick={onSave}
+                    variant="primary"
+                >
+                    {saveStatus === "saving" ? "Saving…" : "Save"}
+                </Button>
+            ) : null}
+            <IconButton label={isAdmin ? "Administrator account" : "Administrator login"} onClick={onOpenAdmin}>
+                <span aria-hidden="true">{isAdmin ? "✓" : "♙"}</span>
+            </IconButton>
             <IconButton label="Open settings" onClick={onOpenSettings}>
                 <span aria-hidden="true">⚙</span>
             </IconButton>

@@ -8,6 +8,7 @@ import styles from "./CountryOverlayList.module.css";
 export interface CountryOverlayListProps
 {
     disabled?: boolean;
+    editable?: boolean;
     onCreate: (countryCode: string, countryName: string) => void;
     onSelect: (overlayId: string) => void;
     onVisibilityChange: (overlayId: string, isVisible: boolean) => void;
@@ -22,6 +23,7 @@ export interface CountryOverlayListProps
  */
 export function CountryOverlayList({
     disabled = false,
+    editable = true,
     onCreate,
     onSelect,
     onVisibilityChange,
@@ -67,9 +69,11 @@ export function CountryOverlayList({
             <header>
                 <p>Map canvas</p>
                 <h2 id="country-overlays-title">Country highlights</h2>
-                <span>Select the map or enter an ISO alpha-3 code to add a highlight.</span>
+                <span>{editable
+                    ? "Select the map or enter an ISO alpha-3 code to add a highlight."
+                    : "Browse the country highlights in the shared dataset."}</span>
             </header>
-            <div className={styles.createForm}>
+            {editable ? <div className={styles.createForm}>
                 <CountryAutocomplete
                     disabled={disabled}
                     onChange={(countryName) =>
@@ -88,7 +92,7 @@ export function CountryOverlayList({
                 <Button disabled={disabled || selectedCountry === null} onClick={handleCreate} variant="secondary">
                     Create country highlight
                 </Button>
-            </div>
+            </div> : null}
             <CountryAutocomplete
                 disabled={disabled}
                 label="Search highlighted countries"
@@ -110,12 +114,12 @@ export function CountryOverlayList({
                                     <small>{overlay.countryCode}</small>
                                 </span>
                             </button>
-                            <CheckboxField
+                            {editable ? <CheckboxField
                                 checked={overlay.isVisible}
                                 disabled={disabled}
                                 label={`Show ${overlay.countryName}`}
                                 onChange={(isVisible) => onVisibilityChange(overlay.id, isVisible)}
-                            />
+                            /> : null}
                         </li>
                     ))}
                 </ul>

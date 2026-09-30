@@ -16,6 +16,7 @@ export interface TagDetailsCardProps
 {
     busy?: boolean;
     detailFields: readonly TagDetailField[];
+    editable?: boolean;
     icon: ReactNode;
     locale?: string;
     onClose?: () => void;
@@ -49,6 +50,7 @@ function formatRating(value: number, locale: string | undefined): string
 export function TagDetailsCard({
     busy = false,
     detailFields,
+    editable = true,
     icon,
     locale,
     onClose,
@@ -124,10 +126,10 @@ export function TagDetailsCard({
                 <ScoreBreakdown locale={locale} result={ratingResult} />
             </div>
 
-            <footer className={styles.actions}>
+            {editable ? <footer className={styles.actions}>
                 <Button disabled={busy} onClick={() => onEdit(tag.id)} variant="secondary">Edit</Button>
                 <Button disabled={busy} onClick={() => onDelete(tag.id)} variant="danger">Delete</Button>
-            </footer>
+            </footer> : null}
         </article>
     );
 }

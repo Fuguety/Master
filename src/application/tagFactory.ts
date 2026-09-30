@@ -49,6 +49,7 @@ export function createUniversityTag(coordinates: Coordinates): UniversityTag
         globalRanking: null,
         localRanking: null,
         commuteQuality: null,
+        papisFavorite: false,
     };
 }
 

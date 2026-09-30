@@ -6,6 +6,7 @@ import styles from './TagDetailsOverlay.module.css';
 export interface TagDetailsOverlayProps
 {
     busy?: boolean;
+    editable?: boolean;
     locale?: string;
     onClose: () => void;
     onDelete: (tagId: string) => void;
@@ -24,6 +25,7 @@ export interface TagDetailsOverlayProps
  */
 export function TagDetailsOverlay({
     busy = false,
+    editable = true,
     locale,
     onClose,
     onDelete,
@@ -51,6 +53,7 @@ export function TagDetailsOverlay({
                 ? (
                     <NotePopup
                         busy={busy}
+                        editable={editable}
                         onClose={onClose}
                         onDelete={onDelete}
                         onEdit={onEdit}
@@ -62,6 +65,7 @@ export function TagDetailsOverlay({
                 ? (
                     <UniversityPopup
                         busy={busy}
+                        editable={editable}
                         locale={locale}
                         onClose={onClose}
                         onDelete={onDelete}
@@ -73,6 +77,7 @@ export function TagDetailsOverlay({
                 : (
                     <CompanyPopup
                         busy={busy}
+                        editable={editable}
                         locale={locale}
                         onClose={onClose}
                         onDelete={onDelete}

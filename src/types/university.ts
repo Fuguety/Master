@@ -1,5 +1,7 @@
 import type { BaseTag } from "./common";
 
+export type PapisStatus = "approved" | "disapproved";
+
 /**
  * Lists the university fields that contribute to automatic scoring.
  * Used to type scoring configuration criteria.
@@ -38,6 +40,8 @@ export interface UniversityTag extends BaseTag
     globalRanking: number | null;
     localRanking: number | null;
     commuteQuality: number | null;
+    papisFavorite?: boolean;
+    papisStatus?: PapisStatus;
 }
 
 

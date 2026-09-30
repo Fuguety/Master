@@ -4,11 +4,13 @@ import type { GeographicNameMode, MapTag, TagType } from '@/types';
 
 export type ToolPanelId =
     | 'navigation'
+    | 'papis'
     | 'visibility'
     | 'university-filters'
     | 'company-filters'
     | 'countries'
     | 'data'
+    | 'admin'
     | 'settings';
 
 export type ActivePanelId = ToolPanelId | 'tag-type' | 'tag-editor' | 'country-editor' | 'country-info' | null;
@@ -17,7 +19,7 @@ export interface ToolDefinition
 {
     description: string;
     icon: string;
-    id: Exclude<ToolPanelId, 'navigation' | 'settings'>;
+    id: Exclude<ToolPanelId, 'navigation' | 'admin' | 'settings'>;
     label: string;
 }
 
@@ -28,6 +30,7 @@ export interface PanelMetadata
 }
 
 export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
+    { id: 'papis', label: 'Papis', icon: 'P', description: 'Review and organize universities' },
     { id: 'visibility', label: 'Tags', icon: '◆', description: 'Browse, create, show, or hide tags' },
     { id: 'university-filters', label: 'Universities', icon: 'U', description: 'Filter university research' },
     { id: 'company-filters', label: 'Companies', icon: 'C', description: 'Filter company research' },
@@ -37,11 +40,13 @@ export const TOOL_DEFINITIONS: readonly ToolDefinition[] = [
 
 export const PANEL_METADATA: Record<Exclude<ActivePanelId, null>, PanelMetadata> = {
     navigation: { title: 'Atlas tools', description: 'Choose a map workspace tool.' },
+    papis: { title: 'Papis', description: 'Review, sort, and annotate every university.' },
     visibility: { title: 'Tag workspace', description: 'Browse, create, and independently show or hide tag types.' },
     'university-filters': { title: 'University filters', description: 'Combine research criteria to narrow visible universities.' },
     'company-filters': { title: 'Company filters', description: 'Combine career criteria to narrow visible companies.' },
     countries: { title: 'Country highlights', description: 'Select a country on the map or edit an existing overlay.' },
-    data: { title: 'Data management', description: 'Keep a portable versioned backup of local research.' },
+    data: { title: 'Data management', description: 'Refresh, import, or export the shared dataset.' },
+    admin: { title: 'Administrator', description: 'Sign in to publish your working copy as the shared base.' },
     settings: { title: 'Settings', description: 'Change presentation without changing application data.' },
     'tag-type': { title: 'Create a map tag', description: 'Choose the record type for this location.' },
     'tag-editor': { title: 'Tag editor', description: 'Complete fields, notes, sources, and scoring inputs.' },
@@ -135,12 +140,20 @@ export function findTag(
  * Used by AppHeader's live save indicator.
  * Returns saved, saving, or error.
  */
-export function getHeaderSaveStatus(status: AtlasDataStatus): 'error' | 'saved' | 'saving'
+export function getHeaderSaveStatus(
+    status: AtlasDataStatus,
+    isDirty = false,
+): 'error' | 'saved' | 'dirty' | 'loading' | 'saving'
 {
     if (status === 'error')
     {
         return 'error';
     }
 
-    return status === 'loading' || status === 'saving' ? 'saving' : 'saved';
+    if (status === 'loading' || status === 'saving')
+    {
+        return status;
+    }
+
+    return isDirty ? 'dirty' : 'saved';
 }

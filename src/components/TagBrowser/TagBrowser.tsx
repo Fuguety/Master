@@ -8,12 +8,17 @@ import { formatRating } from "../../utils/ratingFormat";
 
 export interface TagBrowserProps
 {
+    canCreate?: boolean;
+    description?: string;
     disabled?: boolean;
+    emptyMessage?: string;
     locale?: string;
     onCreate: (coordinates: Coordinates) => void;
     onLocationPreview?: ((coordinates: Coordinates | null) => void) | undefined;
     onSelect: (tag: MapTag) => void;
+    searchLabel?: string;
     tags: readonly MapTag[];
+    title?: string;
 }
 
 
@@ -24,17 +29,22 @@ export interface TagBrowserProps
  * Emits canonical coordinates and complete selected tag records.
  */
 export function TagBrowser({
+    canCreate: creationEnabled = true,
+    description,
     disabled = false,
+    emptyMessage = "No tags match this search.",
     locale,
     onCreate,
     onLocationPreview,
     onSelect,
+    searchLabel = "Search all tags",
     tags,
+    title,
 }: TagBrowserProps)
 {
     const [query, setQuery] = useState("");
     const [location, setLocation] = useState<ResolvedLocation | null>(null);
-    const canCreate = location !== null;
+    const canCreateAtLocation = location !== null;
     const matchingTags = useMemo(() =>
     {
         const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -57,7 +67,7 @@ export function TagBrowser({
      */
     function handleCreate(): void
     {
-        if (!canCreate || location === null)
+        if (!canCreateAtLocation || location === null)
         {
             return;
         }
@@ -68,11 +78,13 @@ export function TagBrowser({
     return (
         <section aria-labelledby="tag-browser-title" className={styles.browser}>
             <div>
-                <h3 id="tag-browser-title">Browse and create tags</h3>
-                <p>Open any saved record, or search for a location to create one without clicking the map.</p>
+                <h3 id="tag-browser-title">{title ?? (creationEnabled ? "Browse and create tags" : "Browse tags")}</h3>
+                <p>{description ?? (creationEnabled
+                    ? "Open any saved record, or search for a location to create one without clicking the map."
+                    : "Open any record in the current shared dataset.")}</p>
             </div>
 
-            <div className={styles.coordinates}>
+            {creationEnabled ? <div className={styles.coordinates}>
                 <LocationSearch
                     disabled={disabled}
                     onResolve={(resolvedLocation) =>
@@ -82,14 +94,14 @@ export function TagBrowser({
                     }}
                     value={location}
                 />
-                <Button disabled={disabled || !canCreate} onClick={handleCreate} variant="secondary">
+                <Button disabled={disabled || !canCreateAtLocation} onClick={handleCreate} variant="secondary">
                     Create tag here
                 </Button>
-            </div>
+            </div> : null}
 
             <TextField
                 disabled={disabled}
-                label="Search all tags"
+                label={searchLabel}
                 onChange={setQuery}
                 placeholder="Name, city, country, or type"
                 type="search"
@@ -97,7 +109,7 @@ export function TagBrowser({
             />
 
             {matchingTags.length === 0
-                ? <p className={styles.empty}>No tags match this search.</p>
+                ? <p className={styles.empty}>{emptyMessage}</p>
                 : (
                     <ul className={styles.list}>
                         {matchingTags.map((tag) => (

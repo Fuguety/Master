@@ -22,3 +22,5 @@ export { useTagEditor } from './useTagEditor';
 export type { SourceInput, UseTagEditorResult } from './useTagEditor';
 export { useApplicationController } from './useApplicationController';
 export type { UseApplicationControllerResult } from './applicationControllerTypes';
+export { useAdminSession } from './useAdminSession';
+export type { UseAdminSessionResult } from './useAdminSession';

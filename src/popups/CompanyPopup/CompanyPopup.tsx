@@ -6,6 +6,7 @@ import { formatMetric } from "../formatters";
 export interface CompanyPopupProps
 {
     busy?: boolean;
+    editable?: boolean;
     locale?: string;
     onClose?: () => void;
     onDelete: (tagId: string) => void;
@@ -21,6 +22,7 @@ export interface CompanyPopupProps
  */
 export function CompanyPopup({
     busy = false,
+    editable = true,
     locale,
     onClose,
     onDelete,
@@ -43,6 +45,7 @@ export function CompanyPopup({
     return (
         <TagDetailsCard
             busy={busy}
+            editable={editable}
             detailFields={detailFields}
             icon={<CompanyIcon />}
             locale={locale}

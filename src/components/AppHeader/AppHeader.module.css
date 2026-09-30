@@ -99,6 +99,15 @@
     background: var(--color-warning);
 }
 
+.saveStatus[data-status='loading'] > span,
+.saveStatus[data-status='dirty'] > span {
+    background: var(--color-warning);
+}
+
+.saveButton {
+    min-width: 4.5rem;
+}
+
 .saveStatus[data-status='error'] {
     color: var(--color-danger);
 }
@@ -121,6 +130,11 @@
     .counts,
     .saveStatus {
         display: none;
+    }
+
+    .saveButton {
+        min-width: auto;
+        padding-inline: var(--space-3);
     }
 
     .brand {

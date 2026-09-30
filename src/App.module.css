@@ -16,7 +16,11 @@
     z-index: calc(var(--z-panel) + 2);
     inset: auto auto var(--space-4) 50%;
     max-width: min(28rem, calc(100vw - 2rem));
-    padding: var(--space-3) var(--space-4);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: start;
+    gap: var(--space-3);
+    padding: var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-medium);
     background: color-mix(in srgb, var(--color-surface) 96%, transparent);
@@ -25,6 +29,59 @@
     font-size: 0.82rem;
     backdrop-filter: blur(12px);
     transform: translateX(-50%);
+}
+
+.statusClose {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: currentColor;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.15rem;
+    grid-column: -1;
+    line-height: 1;
+    place-items: center;
+}
+
+.statusAction {
+    min-height: 1.75rem;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-small);
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.statusAction:hover:not(:disabled) {
+    filter: brightness(1.06);
+}
+
+.statusAction:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.statusAction:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.statusClose:hover {
+    background: var(--color-surface-muted);
+}
+
+.statusClose:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .status[data-error='true'] {

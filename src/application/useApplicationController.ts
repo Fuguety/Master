@@ -24,7 +24,9 @@ const geocodingService = new NominatimGeocodingService();
  * Used by the root application while keeping map, forms, and panels fully controlled.
  * Returns selection, editor, import/export, overlay, and tag action state.
  */
-export function useApplicationController(data: UseAtlasDataResult): UseApplicationControllerResult
+export function useApplicationController(
+    data: UseAtlasDataResult,
+): UseApplicationControllerResult
 {
     const tagEditor = useTagEditor(data.saveTag);
     const geocodingRequest = useRef<AbortController | null>(null);
@@ -246,7 +248,7 @@ export function useApplicationController(data: UseAtlasDataResult): UseApplicati
             {
                 setSelectedTagId(savedTag.id);
                 setActivePanel(null);
-                setStatusMessage(`${savedTag.name} was saved locally.`);
+                setStatusMessage(`${savedTag.name} was saved to your local working copy.`);
             }
         }
         catch
@@ -524,8 +526,9 @@ export function useApplicationController(data: UseAtlasDataResult): UseApplicati
 
         if (overlay !== undefined)
         {
-            setOverlayDraft(overlay);
             setSelectedCountryCode(overlay.countryCode);
+
+            setOverlayDraft(overlay);
             setActivePanel('country-editor');
         }
     }
@@ -589,6 +592,15 @@ export function useApplicationController(data: UseAtlasDataResult): UseApplicati
             return;
         }
 
+        const confirmation = mode === 'replace'
+            ? 'Import and replace your entire local working copy? The shared base is not changed by importing.'
+            : 'Import and merge this file into your local working copy? The shared base is not changed by importing.';
+
+        if (!window.confirm(confirmation))
+        {
+            return;
+        }
+
         try
         {
             const json = await readImportFile(file);
@@ -596,7 +608,7 @@ export function useApplicationController(data: UseAtlasDataResult): UseApplicati
             tagEditor.cancel();
             setSelectedTagId(null);
             setSelectedCountryCode(null);
-            setStatusMessage(`${file.name} was validated and imported in ${mode} mode.`);
+            setStatusMessage(`${file.name} was validated and imported into your local working copy in ${mode} mode.`);
         }
         catch (error)
         {

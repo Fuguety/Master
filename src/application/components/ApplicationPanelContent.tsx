@@ -1,11 +1,14 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
+    AdminLoginPanel,
+    Button,
     CompanyFilterPanel,
     CountryOverlayEditor,
     CountryInformationPanel,
     CountryActionMenu,
     CountryOverlayList,
     DataManagerPanel,
+    PapisPanel,
     SettingsPanel,
     TagBrowser,
     TagTypeChooser,
@@ -23,6 +26,7 @@ import { TagEditorPanel } from './TagEditorPanel';
 import type { MapStyleId } from '@/map';
 import type {
     CompanyFilters,
+    CompanyTag,
     Coordinates,
     CountryOverlay,
     GeographicNameMode,
@@ -31,12 +35,16 @@ import type {
     ThemeDefinition,
     ThemeId,
     UniversityFilters,
+    UniversityTag,
 } from '@/types';
 import styles from './ApplicationPanelContent.module.css';
 
 export interface ApplicationPanelContentProps
 {
     activePanel: ActivePanelId;
+    adminUsername: string | null;
+    adminError: string | null;
+    adminLoading: boolean;
     areaOptions: readonly FilterOption[];
     busy: boolean;
     clusteringEnabled: boolean;
@@ -47,8 +55,16 @@ export interface ApplicationPanelContentProps
     countryOptions: readonly FilterOption[];
     countryActionCoordinates: Coordinates | null;
     dataStatusMessage?: string;
+    dataIsDirty: boolean;
+    dataStatus: 'loading' | 'ready' | 'saving' | 'error';
+    dataWasPublished: boolean;
     industryOptions: readonly FilterOption[];
     geographicNameMode: GeographicNameMode;
+    filteredCompanies: readonly CompanyTag[];
+    filteredUniversities: readonly UniversityTag[];
+    isAdmin: boolean;
+    isSharedConfigured: boolean;
+    lastSavedAt?: string;
     lastExportedAt?: string;
     locale: string;
     mapStyle: MapStyleId;
@@ -67,6 +83,8 @@ export interface ApplicationPanelContentProps
     onMapStyleChange: (style: MapStyleId) => void;
     onGeographicNameModeChange: (mode: GeographicNameMode) => void;
     onLocationResolved: (coordinates: Coordinates) => void;
+    onLogin: (username: string, password: string, rememberSession: boolean) => Promise<boolean>;
+    onLogout: () => Promise<void> | void;
     onQuickCreatePreview: (coordinates: Coordinates | null) => void;
     onNavigationSelect: (panelId: ToolPanelId) => void;
     onOverlayCancel: () => void;
@@ -75,6 +93,8 @@ export interface ApplicationPanelContentProps
     onOverlaySave: () => void;
     onOverlaySelect: (overlayId: string) => void;
     onOverlayVisibilityChange: (overlayId: string, isVisible: boolean) => void;
+    onPapisChange: (university: UniversityTag) => void;
+    onRefresh: () => void;
     onTagSubmit: () => void;
     onTagSelect: (tag: MapTag) => void;
     onTagTypeSelect: (type: TagType) => void;
@@ -95,6 +115,7 @@ export interface ApplicationPanelContentProps
     universityFilterCount: number;
     universityFilters: UniversityFilters;
     universityCityOptions: readonly FilterOption[];
+    universities: readonly UniversityTag[];
     visibleTypes: readonly TagType[];
 }
 
@@ -107,10 +128,22 @@ export interface ApplicationPanelContentProps
  */
 export function ApplicationPanelContent(props: ApplicationPanelContentProps): ReactNode
 {
+    const [universityFiltersVisible, setUniversityFiltersVisible] = useState(true);
+    const [companyFiltersVisible, setCompanyFiltersVisible] = useState(true);
+
     switch (props.activePanel)
     {
         case 'navigation':
             return <NavigationPanel items={props.navigationItems} onSelect={(id) => props.onNavigationSelect(id as ToolPanelId)} />;
+        case 'papis':
+            return (
+                <PapisPanel
+                    disabled={props.busy}
+                    locale={props.locale}
+                    onChange={props.onPapisChange}
+                    universities={props.universities}
+                />
+            );
         case 'visibility':
             return (
                 <div className={styles.tagWorkspace}>
@@ -123,6 +156,7 @@ export function ApplicationPanelContent(props: ApplicationPanelContentProps): Re
                         value={props.visibleTypes}
                     />
                     <TagBrowser
+                        canCreate
                         disabled={props.busy}
                         locale={props.locale}
                         onCreate={props.onCreateTagAtCoordinates}
@@ -134,36 +168,95 @@ export function ApplicationPanelContent(props: ApplicationPanelContentProps): Re
             );
         case 'university-filters':
             return (
-                <UniversityFilterPanel
-                    activeCount={props.universityFilterCount}
-                    cityOptions={props.universityCityOptions}
-                    countryOptions={props.countryOptions}
-                    disabled={props.busy}
-                    onChange={props.onUniversityFiltersChange}
-                    onReset={props.onUniversityFiltersReset}
-                    value={props.universityFilters}
-                />
+                <div className={styles.directoryWorkspace}>
+                    <div className={styles.directoryHeader}>
+                        <div>
+                            <h3>Universities</h3>
+                            <p>{props.filteredUniversities.length} of {props.universities.length} shown</p>
+                        </div>
+                        <Button
+                            aria-expanded={universityFiltersVisible}
+                            onClick={() => setUniversityFiltersVisible((visible) => !visible)}
+                            variant="secondary"
+                        >
+                            {universityFiltersVisible ? 'Hide filters' : 'Show filters'}
+                        </Button>
+                    </div>
+                    {universityFiltersVisible ? (
+                        <UniversityFilterPanel
+                            activeCount={props.universityFilterCount}
+                            cityOptions={props.universityCityOptions}
+                            countryOptions={props.countryOptions}
+                            disabled={props.busy}
+                            onChange={props.onUniversityFiltersChange}
+                            onReset={props.onUniversityFiltersReset}
+                            value={props.universityFilters}
+                        />
+                    ) : null}
+                    <TagBrowser
+                        canCreate={false}
+                        description="Search the complete university list or open a result to view and edit it."
+                        disabled={props.busy}
+                        emptyMessage="No universities match the current search and filters."
+                        locale={props.locale}
+                        onCreate={props.onCreateTagAtCoordinates}
+                        onSelect={props.onTagSelect}
+                        searchLabel="Search universities"
+                        tags={props.filteredUniversities}
+                        title="University list"
+                    />
+                </div>
             );
         case 'company-filters':
             return (
-                <CompanyFilterPanel
-                    activeCount={props.companyFilterCount}
-                    areaOptions={props.areaOptions}
-                    cityOptions={props.companyCityOptions}
-                    countryOptions={props.countryOptions}
-                    disabled={props.busy}
-                    industryOptions={props.industryOptions}
-                    onChange={props.onCompanyFiltersChange}
-                    onReset={props.onCompanyFiltersReset}
-                    value={props.companyFilters}
-                />
+                <div className={styles.directoryWorkspace}>
+                    <div className={styles.directoryHeader}>
+                        <div>
+                            <h3>Companies</h3>
+                            <p>{props.filteredCompanies.length} of {props.companyCount} shown</p>
+                        </div>
+                        <Button
+                            aria-expanded={companyFiltersVisible}
+                            onClick={() => setCompanyFiltersVisible((visible) => !visible)}
+                            variant="secondary"
+                        >
+                            {companyFiltersVisible ? 'Hide filters' : 'Show filters'}
+                        </Button>
+                    </div>
+                    {companyFiltersVisible ? (
+                        <CompanyFilterPanel
+                            activeCount={props.companyFilterCount}
+                            areaOptions={props.areaOptions}
+                            cityOptions={props.companyCityOptions}
+                            countryOptions={props.countryOptions}
+                            disabled={props.busy}
+                            industryOptions={props.industryOptions}
+                            onChange={props.onCompanyFiltersChange}
+                            onReset={props.onCompanyFiltersReset}
+                            value={props.companyFilters}
+                        />
+                    ) : null}
+                    <TagBrowser
+                        canCreate={false}
+                        description="Search the complete company list or open a result to view and edit it."
+                        disabled={props.busy}
+                        emptyMessage="No companies match the current search and filters."
+                        locale={props.locale}
+                        onCreate={props.onCreateTagAtCoordinates}
+                        onSelect={props.onTagSelect}
+                        searchLabel="Search companies"
+                        tags={props.filteredCompanies}
+                        title="Company list"
+                    />
+                </div>
             );
         case 'countries':
             return (
                 <>
-                    <p className={styles.countryHint}>Country selection is active. Click a land area on the map to create or edit its highlight.</p>
+                    <p className={styles.countryHint}>Country selection is active. Changes remain local until an administrator publishes the base dataset.</p>
                     <CountryOverlayList
                         disabled={props.busy}
+                        editable
                         onCreate={props.onCountryCreate}
                         onSelect={props.onOverlaySelect}
                         onVisibilityChange={props.onOverlayVisibilityChange}
@@ -175,10 +268,18 @@ export function ApplicationPanelContent(props: ApplicationPanelContentProps): Re
             return (
                 <DataManagerPanel
                     busy={props.busy}
+                    canImport
+                    connectionMode={props.isSharedConfigured ? 'shared' : 'local'}
+                    isAdmin={props.isAdmin}
+                    isDirty={props.dataIsDirty}
                     lastExportedAt={props.lastExportedAt}
+                    lastSavedAt={props.lastSavedAt}
                     onExport={props.onExport}
                     onImport={props.onImport}
+                    onRefresh={props.onRefresh}
+                    persistenceStatus={props.dataStatus}
                     statusMessage={props.dataStatusMessage}
+                    wasPublished={props.dataWasPublished}
                 />
             );
         case 'settings':
@@ -193,6 +294,17 @@ export function ApplicationPanelContent(props: ApplicationPanelContentProps): Re
                     onThemeChange={props.onThemeChange}
                     theme={props.theme}
                     themes={props.themes}
+                />
+            );
+        case 'admin':
+            return (
+                <AdminLoginPanel
+                    authenticatedUsername={props.adminUsername}
+                    error={props.adminError}
+                    isAdmin={props.isAdmin}
+                    loading={props.adminLoading}
+                    onLogin={props.onLogin}
+                    onLogout={props.onLogout}
                 />
             );
         case 'tag-type':

@@ -1,8 +1,8 @@
 # Atlas Notebook
 
-Atlas Notebook is a full-screen, flat 2D world-map workspace for researching universities, companies, and location-based sticky Notes. It combines MapLibre navigation, clustered and draggable map tags, country facts and highlighting, type-specific scoring and filters, local-first persistence, versioned JSON backup, and five presentation-only themes.
+Atlas Notebook is a full-screen, flat 2D world-map workspace for researching universities, companies, and location-based sticky Notes. It combines MapLibre navigation, clustered map tags, country facts and highlighting, type-specific scoring and filters, one shared Supabase dataset, versioned JSON backup, and five presentation-only themes.
 
-The application is a client-side React project. User records stay in the browser unless they are explicitly exported; map tiles, labels, glyphs, and country geometry are fetched from configured external providers and are **not bundled with the repository**.
+The React frontend is deployed as static GitHub Pages files. Every visitor starts from the same base dataset in Supabase and can freely edit or import a browser-local working copy. Only accounts listed in the protected `app_admins` table can publish that working copy with the explicit **Save** button. Supabase Row Level Security (RLS) enforces that publishing boundary independently of the UI.
 
 ## Features
 
@@ -27,7 +27,8 @@ The application is a client-side React project. User records stay in the browser
 - English, original/local, and combined geographic-name presentation modes
 - Country information, in-country record search, and explicit repeated-click actions at the exact selected coordinate
 - Configurable LOCAL/EUR/USD/BRL monetary display with cached, dated exchange rates when source values are available
-- IndexedDB persistence with a namespaced `localStorage` fallback
+- Public shared reads, visitor-local editing/import, and administrator-only publishing through Supabase Auth, PostgREST, and RLS
+- Explicit administrator Save with loading, dirty, success, and error states
 - Validated, size-limited, versioned JSON import and export with merge and replace modes
 - Five responsive themes: Modern, Neon Grid, 1990s Web, Field Archive, and Nautical Chart
 - Semantic forms, focus management, reduced-motion support, locale-aware numbers, and responsive desktop/mobile panels
@@ -40,7 +41,7 @@ The application is a client-side React project. User records stay in the browser
 | Map         | MapLibre GL JS 5                                                      |
 | Geography   | Turf.js and GeoJSON                                                   |
 | Validation  | Zod at form/import boundaries plus JSON Schema documents              |
-| Persistence | IndexedDB through `idb`, with `localStorage` fallback                 |
+| Persistence | Supabase Postgres/PostgREST with Auth and Row Level Security          |
 | Tests       | Vitest, jsdom, Testing Library matchers                               |
 | Quality     | ESLint, Prettier, strict TypeScript                                   |
 | Styling     | CSS Modules, shared CSS variables, separate theme and animation files |
@@ -49,7 +50,9 @@ The application is a client-side React project. User records stay in the browser
 
 - Node.js `^20.19.0` or `>=22.12.0` (required by the installed Vite version)
 - npm
-- A modern browser with WebGL and either IndexedDB or `localStorage`
+- A free Supabase project
+- A GitHub repository with Pages enabled for deployment
+- A modern browser with WebGL
 - Network access to the selected map/style providers and country-geometry endpoint
 
 ## Install and run
@@ -61,7 +64,7 @@ npm run dev
 
 Vite prints the local development URL, normally `http://localhost:5173`.
 
-Configuration is optional because the application has built-in remote defaults. To start from the documented provider settings:
+Without Supabase configuration, the application runs in local mode with the checked-in example data; editing, JSON import, and export still work for the current page session. To load and publish the shared base dataset, copy the template and set the two public project values:
 
 ```powershell
 Copy-Item .env.example .env
@@ -69,6 +72,68 @@ npm run dev
 ```
 
 Restart Vite after changing `.env`.
+
+`VITE_SUPABASE_ANON_KEY` is Supabase's public anon/publishable key and is expected to appear in the browser bundle. Never use a service-role key, database password, admin password, or other privileged secret in `.env`, any `VITE_*` variable, repository variable, or frontend source.
+
+## Supabase database and authentication setup
+
+1. Create a Supabase project at <https://supabase.com/dashboard> and wait for its database to become ready.
+2. Open **SQL Editor**, create a new query, paste the complete contents of [`supabase/migrations/20260930000000_shared_dataset.sql`](supabase/migrations/20260930000000_shared_dataset.sql), and run it once. The migration:
+   - creates the single `shared_datasets` row and seeds it with the repository's current example bundle;
+   - creates the private `app_admins` allowlist;
+   - enables RLS;
+   - grants public `SELECT` access only;
+   - grants `UPDATE` only when `is_admin()` finds the signed-in user's ID in `app_admins`;
+   - does not grant browser clients `INSERT`, `DELETE`, or access to the admin allowlist.
+3. In **Authentication → Providers → Email**, keep Email/Password enabled. Configure email confirmation to match the desired account workflow.
+4. In **Authentication → Users**, choose **Add user → Create new user** and create a confirmed user with email `admin@atlas.invalid` and password `admin`. The application maps the visible username `admin` to that Auth email. The password exists only in Supabase Auth and is never added to this repository or frontend bundle. `admin` is intentionally weak and should be changed before exposing valuable data publicly.
+5. Return to **SQL Editor** and promote that exact account by running:
+
+   ```sql
+   insert into public.app_admins (user_id)
+   select id
+   from auth.users
+   where lower(email) = lower('admin@atlas.invalid')
+   on conflict (user_id) do nothing;
+   ```
+
+   If the statement inserts no row, verify the `admin@atlas.invalid` user exists in **Authentication → Users**.
+6. Open **Project Settings → API**. Copy the Project URL and the public anon/publishable key into `.env`:
+
+   ```dotenv
+   VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+   VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_OR_PUBLISHABLE_KEY
+   VITE_BASE_PATH=/
+   ```
+
+7. Run `npm run dev`. An anonymous browser should load the seed data and may edit or import its local working copy without an account. Use username `admin` and password `admin` in **Administrator login** to reveal the global **Save** button, which publishes that working copy as the shared base.
+
+To revoke an administrator without deleting their Auth account:
+
+```sql
+delete from public.app_admins
+where user_id = (select id from auth.users where lower(email) = lower('admin@atlas.invalid'));
+```
+
+## GitHub Pages deployment
+
+The checked-in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds Vite with `VITE_BASE_PATH=/Master/`, uploads `dist`, and deploys it through GitHub Pages.
+
+1. Push the repository to `Fuguety/Master` with the deployment branch named `main`.
+2. In **GitHub → Settings → Secrets and variables → Actions → Variables**, add repository variables named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Use the same public values from Supabase. Do not create a service-role variable.
+3. In **Settings → Pages → Build and deployment**, select **GitHub Actions** as the source.
+4. Push to `main`, or open **Actions → Deploy GitHub Pages → Run workflow**.
+5. After both jobs succeed, open `https://fuguety.github.io/Master/`.
+
+For a renamed repository, change `VITE_BASE_PATH` in the workflow to `/<repository-name>/`. For a root user/organization site or an appropriate custom domain, use `/`.
+
+### Deployment smoke test
+
+1. Open the deployed site in a private window. Confirm the seeded records load; editing, import, export, and refresh work; and the global **Save** button is absent.
+2. Attempt to log in with an ordinary Supabase Auth user who is not in `app_admins`. The app must report that the account is not an administrator. A direct `PATCH` made with that user's access token must affect zero rows or return a permission error because of RLS.
+3. Log in with the promoted administrator. Edit one record; confirm the header shows **Ready to publish**, then click **Save** and accept the overwrite confirmation. Confirm the success message appears.
+4. Reload the private window or choose **Data → Refresh**. Confirm the administrator's change is visible there.
+5. Inspect the built files or browser Sources. The public project URL and anon/publishable key will be present by design. Confirm no password, `sb_secret_...` key, service-role JWT, database URL/password, or `SUPABASE_SERVICE_ROLE_KEY` is present.
 
 ### Commands
 
@@ -156,12 +221,12 @@ Themes modify CSS variables and presentation only. They never alter tag data, fi
 
 ### Import and export data
 
-The data manager exports a UTF-8, versioned JSON bundle. Available export scopes can limit the downloaded entity collections while retaining the bundle envelope. Imports support:
+The data manager exports a UTF-8, versioned JSON bundle. Available export scopes can limit the downloaded entity collections while retaining the bundle envelope. Import, export, and refresh are available to everyone. An import requires confirmation and changes only the visitor's local working copy. If an administrator is logged in, the global **Save** button can then publish that working copy as the shared base. Imports support:
 
 - **Merge** — preserve current records and upsert incoming records by `id`; incoming records win on conflicts.
 - **Replace** — atomically replace all University, Company, Note, and country-overlay collections after the entire bundle validates.
 
-Imports are parsed as JSON, migrated at the version boundary, validated with strict Zod schemas, and limited to 10 MiB before persistent data changes. Unknown fields, malformed coordinates, invalid colors, non-HTTP source URLs, and unsupported versions are rejected.
+Imports are parsed as JSON, migrated at the version boundary, validated with strict Zod schemas, and limited to 10 MiB before the working copy changes. Unknown fields, malformed coordinates, invalid colors, non-HTTP source URLs, and unsupported versions are rejected. A second confirmation on administrator **Save** is required before the shared row is overwritten.
 
 Export before using replace mode when the current data matters. A scoped export keeps non-selected arrays empty to remain schema-valid: importing that file in **merge** mode affects only its populated scope, while importing it in **replace** mode also clears the non-selected collections.
 
@@ -189,30 +254,19 @@ Operational notes:
 - A replacement style/endpoint must be HTTPS in an HTTPS deployment, allow browser CORS, use the expected XYZ placeholders where applicable, and remain compatible with MapLibre.
 - Replacement style documents must retain the flat Mercator projection so horizontal world wrapping remains available; globe projection is intentionally unsupported.
 - `VITE_*` values are embedded into client assets at build time. Never place secrets or private API keys in them.
-- Provider failures are surfaced without discarding locally stored research data.
+- Provider failures are surfaced without silently replacing the last loaded shared snapshot.
 
-## Persistence and first-run behavior
+## Shared persistence behavior
 
-`createDataAccess()` prefers an IndexedDB database named `atlas-notebook`. Version 2 creates separate `universities`, `companies`, `notes`, `countryOverlays`, and `metadata` object stores. Entity stores use stable record IDs as keys and include `updatedAt` indexes.
+`public.shared_datasets` contains one row with ID `atlas`. The entire versioned application bundle is stored in its `data` JSONB column so the existing import/export schema remains the network boundary. Every mount and explicit refresh fetches this row. Every visitor's tag, Papis, note, country-overlay, and import actions update only an in-memory working copy. The database changes only when an authenticated administrator confirms the global **Save** action.
 
-If IndexedDB cannot be opened in automatic mode, the same repository interface falls back to one versioned `localStorage` value:
+The migration seeds the row from the checked-in example University, Company, Note, and country-overlay records. Later edits to `src/data/*.json` do not change an existing Supabase row. Import into a working copy, review it, then log in as the administrator and use **Save** when a shared replacement or merge is intentional.
 
-```text
-atlas-notebook:data:v1
-```
-
-On a genuine first run, and only when all entity stores are empty, the browser is seeded from:
-
-- `src/data/universities.json`
-- `src/data/companies.json`
-- `src/data/notes.json`
-- `src/data/country-overlays.json`
-
-The durable `initialized` marker prevents deleted or programmatically cleared data from being recreated on a later reload. The data-access layer's `clearAll()` method empties all entity stores while retaining that marker; the current data-manager UI exposes validated merge/replace import rather than a separate clear button. Updating the repository's example JSON does not overwrite an already initialized browser database. Use a fresh origin/browser profile, remove the site's IndexedDB/localStorage through developer tools, or import a bundle to inspect new seed records.
+RLS permits `SELECT` to `anon` and `authenticated`. Database `UPDATE` requires both an authenticated JWT and membership in `app_admins`. Local editing does not grant database access; a forged publish request from a non-admin is rejected by Postgres. `INSERT`, `DELETE`, and direct browser access to `app_admins` are not granted.
 
 Presentation preferences use separate `localStorage` keys for the theme, map style, clustering, visible types, geographic-name mode, panel width, and floating-window geometry. They are not included in data exports.
 
-All persistence is local to the browser origin. There is currently no account, server synchronization, encryption layer, or cross-device backup; exported JSON is the portability and backup mechanism.
+Supabase access/refresh tokens are retained in tab storage by default and in local storage only when **Remember this login** is selected. Passwords are sent directly to Supabase Auth over HTTPS and are never stored by application code. Exported JSON remains the portable backup mechanism.
 
 ## Data files and schemas
 
@@ -220,11 +274,11 @@ All persistence is local to the browser origin. There is currently no account, s
 
 | File                             | Purpose                                            |
 | -------------------------------- | -------------------------------------------------- |
-| `src/data/universities.json`     | Example University records and first-run seed data |
-| `src/data/companies.json`        | Example Company records and first-run seed data    |
-| `src/data/notes.json`            | Example sticky Note records and first-run seed data |
-| `src/data/countries.json`        | Bundled 195-country static information snapshot     |
-| `src/data/country-overlays.json` | Example country highlights and first-run seed data |
+| `src/data/universities.json`     | Example University records used by the SQL seed     |
+| `src/data/companies.json`        | Example Company records used by the SQL seed        |
+| `src/data/notes.json`            | Example sticky Note records used by the SQL seed    |
+| `src/data/countries.json`        | Bundled 196-record static information snapshot      |
+| `src/data/country-overlays.json` | Example country highlights used by the SQL seed     |
 | `src/config/scoring-config.json` | Rating ranges, criteria, weights, and mappings     |
 | `src/config/theme-config.json`   | Five theme definitions and the default theme       |
 | `src/config/interaction-config.json` | Create-mode and repeated-country-click behavior |
@@ -339,7 +393,7 @@ src/
 ├── application/       React-facing workflows, draft factories, mutations, validation
 ├── components/        Shared UI, panels, controls, forms, and type filters
 ├── config/            Scoring and theme JSON configuration
-├── data/              Example entity JSON and first-run seed exports
+├── data/              Example entity JSON and database seed sources
 ├── filters/           Compiled predicates and single-pass filtering services
 ├── hooks/             Map lifecycle, focus, media query, and field-update hooks
 ├── map/               MapLibre component, styles, layers, interactions, and icons
@@ -402,11 +456,13 @@ Map canvases are intrinsically visual. The surrounding labeled controls, editabl
 - Source links accept only HTTP/HTTPS and open with `noopener noreferrer`.
 - Imported JSON is never evaluated and is limited to 10 MiB.
 - Overlay colors are schema-validated and sanitized before becoming MapLibre paint values.
+- Supabase RLS allows public reads but checks the protected administrator allowlist for every update.
+- The frontend contains only the public Supabase URL and anon/publishable key; privileged credentials stay outside GitHub Pages.
 - The supplied HTML includes a CSP-compatible baseline for scripts, images, connections, fonts, styles, and MapLibre workers.
 
 The default CSP permits broad HTTPS map resources and inline styles required by current UI/map rendering. For production, deliver CSP as an HTTP response header and narrow `connect-src`/`img-src` to the exact chosen providers while retaining the MapLibre worker requirements (`worker-src 'self' blob:`). Development HMR may also require the local Vite WebSocket origin. Test any stricter policy against style JSON, raster/vector tiles, glyphs, GeoJSON, blob workers, and dynamically applied styles.
 
-Browser-local data is not encrypted by the application. Treat shared browser profiles, exported JSON files, notes, and research URLs according to their sensitivity.
+The shared dataset is intentionally public. Do not store private or regulated information in records. Treat remembered login sessions, exported JSON files, notes, and research URLs according to their sensitivity.
 
 ## Performance decisions
 
@@ -414,7 +470,7 @@ Browser-local data is not encrypted by the application. Treat shared browser pro
 - Feature properties stay compact; full records use an O(1) ID lookup map.
 - Text filters compile normalized `Set` lookups and each tag type is filtered in a single pass.
 - Map listeners are registered once, callbacks are refreshed without re-registration, and all listeners/map resources are removed on unmount.
-- Marker dragging previews source coordinates and commits one storage update at drag end.
+- Administrator marker dragging previews source coordinates and commits one draft update at drag end.
 - Application layers are reinstalled after style changes without recreating the React app.
 - Map controls honor panel insets and CSS safe areas; symbol collision rules and clustering limit overlap.
 - Vite produces separate MapLibre and validation chunks, splits CSS, targets ES2022, and emits source maps.
@@ -452,7 +508,7 @@ The codebase is organized so each phase can be verified before the next one chan
 
 1. **Foundation** — Vite/React/TypeScript setup, shared types, CSS foundations, five themes, example JSON, and schemas.
 2. **Domain services** — Zod validation, configurable scoring, optimized predicates, and geographic utilities.
-3. **Persistence** — repository abstraction, IndexedDB/localStorage drivers, first-run seed rules, versioning, and safe import/export.
+3. **Persistence** — Supabase shared dataset client, Auth session handling, RLS migration, versioning, and safe import/export.
 4. **Map canvas** — base styles, providers/attribution, country layers, clustered tag layers, navigation, clicks, selection, and dragging.
 5. **Feature UI** — type chooser, University/Company editors, notes, sources, detail cards, country editor, filters, settings, and data manager.
 6. **Integration and hardening** — responsive composition, focus/control collision handling, cleanup, CSP review, tests, lint, type-check, and production build.

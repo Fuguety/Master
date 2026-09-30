@@ -10,6 +10,7 @@ import {
     countCompanyFilters,
     countUniversityFilters,
     createFilterOptions,
+    useAdminSession,
     useAtlasData,
     useApplicationController,
 } from '@/application';
@@ -29,6 +30,7 @@ import type {
     MapTag,
     TagType,
     UniversityFilters,
+    UniversityTag,
 } from '@/types';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useStoredPreference } from '@/hooks/useStoredPreference';
@@ -61,7 +63,8 @@ import styles from './App.module.css';
  */
 function AtlasApplication()
 {
-    const data = useAtlasData();
+    const adminSession = useAdminSession();
+    const data = useAtlasData(adminSession.isAdmin);
     const {
         activePanel,
         closePanel,
@@ -102,6 +105,8 @@ function AtlasApplication()
         toggleCreateTagMode,
         toggleTagPinned,
     } = useApplicationController(data);
+    const notificationMessage = data.error ?? data.message ?? statusMessage;
+    const [dismissedNotification, setDismissedNotification] = useState<string | null>(null);
     const { theme, themes, setTheme } = useTheme();
     const isMobile = useMediaQuery('(max-width: 48rem)');
     const [mapStyle, setMapStyle] = useStoredPreference<MapStyleId>(
@@ -152,19 +157,22 @@ function AtlasApplication()
         setCameraTarget(null);
     }, []);
 
-    const visibleUniversities = useMemo(() =>
-    {
-        return visibleTypes.includes('university')
-            ? filterUniversities(data.bundle.universities, universityFilters)
-            : [];
-    }, [data.bundle.universities, universityFilters, visibleTypes]);
-
-    const visibleCompanies = useMemo(() =>
-    {
-        return visibleTypes.includes('company')
-            ? filterCompanies(data.bundle.companies, companyFilters)
-            : [];
-    }, [companyFilters, data.bundle.companies, visibleTypes]);
+    const filteredUniversities = useMemo(
+        () => filterUniversities(data.bundle.universities, universityFilters),
+        [data.bundle.universities, universityFilters],
+    );
+    const filteredCompanies = useMemo(
+        () => filterCompanies(data.bundle.companies, companyFilters),
+        [companyFilters, data.bundle.companies],
+    );
+    const visibleUniversities = useMemo(
+        () => visibleTypes.includes('university') ? filteredUniversities : [],
+        [filteredUniversities, visibleTypes],
+    );
+    const visibleCompanies = useMemo(
+        () => visibleTypes.includes('company') ? filteredCompanies : [],
+        [filteredCompanies, visibleTypes],
+    );
     const visibleNotes = useMemo(
         () => visibleTypes.includes('note') ? data.bundle.notes ?? [] : [],
         [data.bundle.notes, visibleTypes],
@@ -225,12 +233,14 @@ function AtlasApplication()
         id: 'create-tag',
         label: 'Create Tag',
         icon: <span aria-hidden="true">+</span>,
-    }, ...TOOL_DEFINITIONS.map((definition) => ({
-        id: definition.id,
-        label: definition.label,
-        icon: <span aria-hidden="true">{definition.icon}</span>,
-        badge: toolBadges[definition.id],
-    }))];
+    },
+        ...TOOL_DEFINITIONS.map((definition) => ({
+            id: definition.id,
+            label: definition.label,
+            icon: <span aria-hidden="true">{definition.icon}</span>,
+            badge: toolBadges[definition.id],
+        })),
+    ];
     const navigationItems: NavigationItem[] = [
         ...TOOL_DEFINITIONS.map((definition) => ({
             id: definition.id,
@@ -276,9 +286,62 @@ function AtlasApplication()
         }
     };
 
+    const handlePapisChange = useCallback(async (university: UniversityTag): Promise<void> =>
+    {
+        try
+        {
+            await data.saveTag(university);
+            setStatusMessage(`${university.name} Papis details updated.`);
+        }
+        catch
+        {
+            // The data hook exposes a safe live error message.
+        }
+    }, [data, setStatusMessage]);
+
+    const handleSharedSave = useCallback(async (): Promise<void> =>
+    {
+        if (!adminSession.isAdmin || !data.isDirty)
+        {
+            return;
+        }
+
+        if (!window.confirm('Publish your current working copy and overwrite the shared base dataset for everyone?'))
+        {
+            return;
+        }
+
+        try
+        {
+            await data.saveSharedDataset();
+        }
+        catch
+        {
+            // The data hook exposes a safe live error message.
+        }
+    }, [adminSession.isAdmin, data]);
+
+    const handleRefresh = useCallback(async (): Promise<void> =>
+    {
+        if (data.isDirty && !window.confirm('Discard your local changes and reload the current shared base dataset?'))
+        {
+            return;
+        }
+
+        await data.refetch();
+    }, [data]);
+
+    const handleLogout = useCallback(async (): Promise<void> =>
+    {
+        await adminSession.logout();
+    }, [adminSession]);
+
     const panelContent = activePanel === null ? null : (
         <ApplicationPanelContent
             activePanel={activePanel}
+            adminUsername={adminSession.username}
+            adminError={adminSession.error}
+            adminLoading={adminSession.status === 'checking' || adminSession.status === 'authenticating'}
             areaOptions={areaOptions}
             busy={isBusy}
             clusteringEnabled={clusteringEnabled}
@@ -289,12 +352,22 @@ function AtlasApplication()
             companyFilters={companyFilters}
             countryOptions={countryOptions}
             countryActionCoordinates={countryActionCoordinates}
-            dataStatusMessage={data.error ?? statusMessage ?? undefined}
+            dataStatusMessage={data.error ?? data.message ?? statusMessage ?? undefined}
+            dataIsDirty={data.isDirty}
+            dataStatus={data.status}
+            dataWasPublished={data.hasPublishedThisSession}
             industryOptions={industryOptions}
             geographicNameMode={geographicNameMode}
+            filteredCompanies={filteredCompanies}
+            filteredUniversities={filteredUniversities}
+            isAdmin={adminSession.isAdmin}
+            isSharedConfigured={data.isSharedConfigured}
             lastExportedAt={lastExportedAt === undefined
                 ? undefined
                 : new Date(lastExportedAt).toLocaleString(locale)}
+            lastSavedAt={data.lastSavedAt === null
+                ? undefined
+                : new Date(data.lastSavedAt).toLocaleString(locale)}
             locale={locale}
             mapStyle={mapStyle}
             navigationItems={navigationItems}
@@ -315,6 +388,8 @@ function AtlasApplication()
                 setGeographicNameMode(mode);
             }}
             onLocationResolved={(coordinates) => requestCamera(coordinates, 'draft')}
+            onLogin={adminSession.login}
+            onLogout={handleLogout}
             onQuickCreatePreview={(coordinates) =>
             {
                 setQuickCreatePreview(coordinates);
@@ -336,6 +411,8 @@ function AtlasApplication()
             onOverlaySelect={handleOverlayListSelect}
             onOverlayVisibilityChange={(overlayId, isVisible) =>
                 void handleOverlayVisibilityChange(overlayId, isVisible)}
+            onPapisChange={(university) => void handlePapisChange(university)}
+            onRefresh={() => void handleRefresh()}
             onTagSubmit={() =>
             {
                 setQuickCreatePreview(null);
@@ -365,6 +442,7 @@ function AtlasApplication()
             universityCount={data.bundle.universities.length}
             universityFilterCount={universityFilterCount}
             universityFilters={universityFilters}
+            universities={data.bundle.universities}
             visibleTypes={visibleTypes}
         />
     );
@@ -416,9 +494,13 @@ function AtlasApplication()
 
             <AppHeader
                 companyCount={visibleCompanies.length}
+                isDirty={data.isDirty}
+                isAdmin={adminSession.isAdmin}
+                onOpenAdmin={() => openTool('admin')}
                 onOpenMenu={() => openTool('navigation')}
                 onOpenSettings={() => openTool('settings')}
-                saveStatus={getHeaderSaveStatus(data.status)}
+                onSave={() => void handleSharedSave()}
+                saveStatus={getHeaderSaveStatus(data.status, data.isDirty)}
                 universityCount={visibleUniversities.length}
             />
             <ToolRail
@@ -464,6 +546,7 @@ function AtlasApplication()
                     content: (
                         <TagDetailsOverlay
                             busy={isBusy}
+                            editable
                             locale={locale}
                             onClose={() => closeTagDetails(tag.id)}
                             onDelete={(tagId) => void handleTagDelete(tagId)}
@@ -483,16 +566,35 @@ function AtlasApplication()
                 onPinChange={toggleTagPinned}
             />
 
-            {data.status === 'loading' ? <p className={styles.loading}>Loading local research…</p> : null}
-            {data.error !== null || statusMessage !== null
+            {data.status === 'loading' ? <p className={styles.loading}>Loading shared research…</p> : null}
+            {notificationMessage !== null && notificationMessage !== dismissedNotification
                 ? (
-                    <p
+                    <div
                         aria-live="polite"
                         className={styles.status}
                         data-error={data.error !== null}
+                        role={data.error === null ? 'status' : 'alert'}
                     >
-                        {data.error ?? statusMessage}
-                    </p>
+                        <span>{notificationMessage}</span>
+                        {adminSession.isAdmin && data.isDirty ? (
+                            <button
+                                className={styles.statusAction}
+                                disabled={data.status === 'saving'}
+                                onClick={() => void handleSharedSave()}
+                                type="button"
+                            >
+                                Save shared base
+                            </button>
+                        ) : null}
+                        <button
+                            aria-label="Dismiss notification"
+                            className={styles.statusClose}
+                            onClick={() => setDismissedNotification(notificationMessage)}
+                            type="button"
+                        >
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
                 )
                 : null}
         </div>

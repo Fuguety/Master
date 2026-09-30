@@ -23,6 +23,8 @@ export const universityTagSchema = z.object({
     globalRanking: z.number().int().positive().nullable(),
     localRanking: z.number().int().positive().nullable(),
     commuteQuality: nullableScoreSchema,
+    papisFavorite: z.boolean().optional(),
+    papisStatus: z.enum(["approved", "disapproved"]).optional(),
 }).strict();
 
 

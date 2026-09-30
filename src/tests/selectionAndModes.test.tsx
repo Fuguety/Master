@@ -33,8 +33,15 @@ function createControllerData(): UseAtlasDataResult
         deleteTag: vi.fn(),
         error: null,
         exportJson: vi.fn(),
+        hasPublishedThisSession: false,
         importJson: vi.fn(),
+        isDirty: false,
+        isSharedConfigured: true,
+        lastSavedAt: null,
+        message: null,
+        refetch: vi.fn(),
         saveCountryOverlay: vi.fn(),
+        saveSharedDataset: vi.fn(),
         saveTag: vi.fn(),
         status: "ready",
     };
@@ -65,6 +72,22 @@ beforeEach(() =>
 
 describe("synchronized tag selection", () =>
 {
+    it("allows every visitor to create tags in a local working copy", async () =>
+    {
+        const { result } = renderHook(() => useApplicationController(createControllerData()));
+
+        act(() => result.current.toggleCreateTagMode());
+        expect(result.current.createTagMode).toBe(true);
+
+        await act(() => result.current.handleLocationTagCreation({ longitude: 12, latitude: 51 }));
+        expect(result.current.activePanel).toBe("tag-type");
+
+        act(() => result.current.handleCountryTagCreation("university", { longitude: 12, latitude: 51 }));
+
+        expect(result.current.tagEditor.draft?.type).toBe("university");
+        expect(result.current.activePanel).toBe("tag-editor");
+    });
+
     it("enables creation through a pure Strict Mode-safe state transition", () =>
     {
         const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
@@ -165,7 +188,7 @@ describe("synchronized tag selection", () =>
         expect(result.current.tagEditor.draft).toBeNull();
         expect(result.current.activePanel).toBeNull();
         expect(result.current.selectedTagId).toBe(draft.id);
-        expect(result.current.statusMessage).toBe("New Company was saved locally.");
+        expect(result.current.statusMessage).toBe("New Company was saved to your local working copy.");
     });
 
     it("clears deleted references and preserves closed selection only when pinned", async () =>
@@ -236,10 +259,10 @@ describe("highlighted-country browsing", () =>
 
 describe("bundled sovereign-country facts", () =>
 {
-    it("contains all 195 sovereign records with maintainable source metadata", () =>
+    it("contains all 196 sovereign records with maintainable source metadata", () =>
     {
-        expect(countryRecords).toHaveLength(195);
-        expect(new Set(countryRecords.map((country) => country.iso3)).size).toBe(195);
+        expect(countryRecords).toHaveLength(196);
+        expect(new Set(countryRecords.map((country) => country.iso3)).size).toBe(196);
         expect(countryRecords.every((country) => country.dataSource.startsWith("Bundled Atlas Dataset"))).toBe(true);
         expect(countryRecords.every((country) => country.lastUpdated.length === 10)).toBe(true);
     });

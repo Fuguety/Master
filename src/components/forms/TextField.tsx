@@ -17,7 +17,7 @@ export interface TextFieldProps
     onChange: (value: string) => void;
     placeholder?: string;
     required?: boolean;
-    type?: "email" | "search" | "text" | "url";
+    type?: "email" | "password" | "search" | "text" | "url";
     value: string;
 }
 

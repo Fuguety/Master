@@ -15,8 +15,47 @@
     overflow-x: hidden;
 }
 
+.directoryWorkspace {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    overflow-x: hidden;
+}
+
+.directoryHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.directoryHeader h3,
+.directoryHeader p {
+    margin: 0;
+}
+
+.directoryHeader h3 {
+    font-family: var(--font-family-display);
+    font-size: 1.05rem;
+}
+
+.directoryHeader p {
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: 0.76rem;
+}
+
+.directoryHeader button {
+    flex: none;
+}
+
 @media (max-width: 30rem) {
     .tagWorkspace {
         padding: var(--space-4);
+    }
+
+    .directoryWorkspace {
+        padding: var(--space-3);
     }
 }

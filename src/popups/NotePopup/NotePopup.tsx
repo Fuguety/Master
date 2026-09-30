@@ -6,6 +6,7 @@ import styles from "./NotePopup.module.css";
 export interface NotePopupProps
 {
     busy?: boolean;
+    editable?: boolean;
     onClose: () => void;
     onDelete: (tagId: string) => void;
     onEdit: (tagId: string) => void;
@@ -17,7 +18,15 @@ export interface NotePopupProps
  * Displays a sticky Note's content, location, sources, and lock controls.
  * Used inside floating Note windows without invoking scoring presentation.
  */
-export function NotePopup({ busy = false, onClose, onDelete, onEdit, onToggleLock, tag }: NotePopupProps)
+export function NotePopup({
+    busy = false,
+    editable = true,
+    onClose,
+    onDelete,
+    onEdit,
+    onToggleLock,
+    tag,
+}: NotePopupProps)
 {
     return (
         <article className={styles.note} style={{ "--note-color": tag.color ?? "#f4c95d" } as React.CSSProperties}>
@@ -41,13 +50,13 @@ export function NotePopup({ busy = false, onClose, onDelete, onEdit, onToggleLoc
                     </ul>
                 )}
             </div>
-            <footer>
+            {editable ? <footer>
                 <Button disabled={busy} onClick={() => onToggleLock(tag)} variant="secondary">
                     {tag.locked ? "Unlock" : "Lock"}
                 </Button>
                 <Button disabled={busy} onClick={() => onEdit(tag.id)} variant="secondary">Edit</Button>
                 <Button disabled={busy} onClick={() => onDelete(tag.id)} variant="danger">Delete</Button>
-            </footer>
+            </footer> : null}
         </article>
     );
 }

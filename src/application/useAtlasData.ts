@@ -1,16 +1,33 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { exampleCompanies, exampleCountryOverlays, exampleNotes, exampleUniversities } from '@/data';
-import { createDataAccess, type AtlasDataAccess, type ImportMode } from '@/storage';
 import { synchronizeBundleRatings } from '@/scoring';
+import { sharedDatasetClient } from '@/services';
+import {
+    CURRENT_DATA_VERSION,
+    parseImportJson,
+    prepareImportedBundle,
+    serializeBundle,
+    type ImportMode,
+} from '@/storage';
 import type { AppDataBundle, CountryOverlay, MapTag } from '@/types';
+import { parseAppDataBundle } from '@/validation';
 
 const EMPTY_BUNDLE: AppDataBundle = {
-    version: 1,
+    version: CURRENT_DATA_VERSION,
     exportedAt: new Date(0).toISOString(),
     universities: [],
     companies: [],
     notes: [],
     countryOverlays: [],
+};
+
+const CONFIGURATION_FALLBACK_BUNDLE: AppDataBundle = {
+    version: CURRENT_DATA_VERSION,
+    exportedAt: new Date(0).toISOString(),
+    universities: exampleUniversities,
+    companies: exampleCompanies,
+    notes: exampleNotes,
+    countryOverlays: exampleCountryOverlays,
 };
 
 export type AtlasDataStatus = 'loading' | 'ready' | 'saving' | 'error';
@@ -23,8 +40,15 @@ export interface UseAtlasDataResult
     deleteTag: (tag: MapTag) => Promise<void>;
     error: string | null;
     exportJson: () => Promise<string>;
+    hasPublishedThisSession: boolean;
     importJson: (json: string, mode: ImportMode) => Promise<void>;
+    isDirty: boolean;
+    isSharedConfigured: boolean;
+    lastSavedAt: string | null;
+    message: string | null;
+    refetch: () => Promise<void>;
     saveCountryOverlay: (overlay: CountryOverlay) => Promise<void>;
+    saveSharedDataset: () => Promise<void>;
     saveTag: (tag: MapTag) => Promise<void>;
     status: AtlasDataStatus;
 }
@@ -33,47 +57,19 @@ export interface UseAtlasDataResult
 
 /**
  * Converts an unknown persistence failure into a concise safe user message.
- * Used by every application data operation.
+ * Used by every shared dataset operation.
  * Returns an Error message without exposing imported payload contents.
  */
 function describeError(error: unknown): string
 {
-    return error instanceof Error ? error.message : 'The local data operation failed.';
-}
-
-
-
-/**
- * Loads a fresh bundle and synchronizes derived ratings with active configuration.
- * Used after startup, imports, and clear operations.
- * Returns the current repository snapshot and persists only changed derived scores.
- */
-async function loadCurrentBundle(dataAccess: AtlasDataAccess): Promise<AppDataBundle>
-{
-    const storedBundle = await dataAccess.loadBundle();
-    const synchronizedBundle = synchronizeBundleRatings(storedBundle);
-    const changedUniversities = synchronizedBundle.universities.filter((university, index) =>
-    {
-        return university.finalRating !== storedBundle.universities[index]?.finalRating;
-    });
-    const changedCompanies = synchronizedBundle.companies.filter((company, index) =>
-    {
-        return company.finalRating !== storedBundle.companies[index]?.finalRating;
-    });
-
-    await Promise.all([
-        dataAccess.universities.saveMany(changedUniversities),
-        dataAccess.companies.saveMany(changedCompanies),
-    ]);
-
-    return synchronizedBundle;
+    return error instanceof Error ? error.message : 'The shared data operation failed.';
 }
 
 
 
 /**
  * Replaces or appends one record by identifier without mutating React state.
- * Used by optimistic university, company, and overlay collection updates.
+ * Used by visitor-local university, company, note, and overlay updates.
  * Returns a stable array containing the saved record once.
  */
 function upsertRecord<TRecord extends { id: string }>(
@@ -94,230 +90,246 @@ function upsertRecord<TRecord extends { id: string }>(
 
 
 /**
- * Owns the swappable persistence facade and synchronized React data snapshot.
- * Used by the root application controller for all CRUD, import, and export workflows.
- * Returns async actions plus loading, saving, and error state.
+ * Merges records by identifier with incoming import records taking precedence.
+ * Used by non-destructive working-copy imports for every entity collection.
+ * Returns a new collection without mutating the current published snapshot.
  */
-export function useAtlasData(): UseAtlasDataResult
+function mergeRecords<TRecord extends { id: string }>(
+    existingRecords: readonly TRecord[],
+    incomingRecords: readonly TRecord[],
+): TRecord[]
 {
-    const dataAccessRef = useRef<AtlasDataAccess | null>(null);
-    const operationInFlightRef = useRef(false);
+    const recordsByIdentifier = new Map(existingRecords.map((record) => [record.id, record]));
+
+    for (const record of incomingRecords)
+    {
+        recordsByIdentifier.set(record.id, record);
+    }
+
+    return [...recordsByIdentifier.values()];
+}
+
+
+
+/**
+ * Creates one schema-valid merge of a current bundle and imported bundle.
+ * Used by the local import workflow before an optional administrator publish.
+ * Preserves current records unless an imported identifier replaces them.
+ */
+function mergeBundles(current: AppDataBundle, imported: AppDataBundle): AppDataBundle
+{
+    return parseAppDataBundle({
+        version: CURRENT_DATA_VERSION,
+        exportedAt: new Date().toISOString(),
+        universities: mergeRecords(current.universities, imported.universities),
+        companies: mergeRecords(current.companies, imported.companies),
+        notes: mergeRecords(current.notes ?? [], imported.notes ?? []),
+        countryOverlays: mergeRecords(current.countryOverlays, imported.countryOverlays),
+    });
+}
+
+
+
+/**
+ * Owns the public shared snapshot plus a visitor-local working copy.
+ * Used by the root application controller for CRUD, import, export, and publishing.
+ * Returns draft actions and explicit loading, dirty, saving, success, and error state.
+ */
+export function useAtlasData(canPublish = false): UseAtlasDataResult
+{
+    const publishedBundleReference = useRef<AppDataBundle>(EMPTY_BUNDLE);
+    const operationInFlightReference = useRef(false);
     const [bundle, setBundle] = useState<AppDataBundle>(EMPTY_BUNDLE);
     const [status, setStatus] = useState<AtlasDataStatus>('loading');
     const [error, setError] = useState<string | null>(null);
+    const [hasPublishedThisSession, setHasPublishedThisSession] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState(false);
+    const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
-    useEffect(() =>
+    const loadSharedDataset = useCallback(async (): Promise<void> =>
     {
-        let isActive = true;
-
-        /**
-         * Initializes IndexedDB with example records on a genuine first run.
-         * Used once per mounted application data service.
-         * Updates state only while the owning effect remains active.
-         */
-        async function initialize(): Promise<void>
-        {
-            try
-            {
-                const dataAccess = await createDataAccess();
-
-                if (!isActive)
-                {
-                    dataAccess.close();
-                    return;
-                }
-
-                dataAccessRef.current = dataAccess;
-                await dataAccess.initialize({
-                    universities: exampleUniversities,
-                    companies: exampleCompanies,
-                    notes: exampleNotes,
-                    countryOverlays: exampleCountryOverlays,
-                });
-                const loadedBundle = await loadCurrentBundle(dataAccess);
-
-                if (isActive)
-                {
-                    setBundle(loadedBundle);
-                    setStatus('ready');
-                }
-            }
-            catch (initializationError)
-            {
-                if (isActive)
-                {
-                    setError(describeError(initializationError));
-                    setStatus('error');
-                }
-            }
-        }
-
-        void initialize();
-
-        return () =>
-        {
-            isActive = false;
-            dataAccessRef.current?.close();
-            dataAccessRef.current = null;
-        };
-    }, []);
-
-    const requireDataAccess = useCallback((): AtlasDataAccess =>
-    {
-        const dataAccess = dataAccessRef.current;
-
-        if (dataAccess === null)
-        {
-            throw new Error('Local storage is still starting. Please try again.');
-        }
-
-        return dataAccess;
-    }, []);
-
-    const runOperation = useCallback(async (operation: () => Promise<void>): Promise<void> =>
-    {
-        if (operationInFlightRef.current)
-        {
-            throw new Error('Another local data operation is still in progress.');
-        }
-
-        operationInFlightRef.current = true;
-        setStatus('saving');
+        setStatus('loading');
         setError(null);
+        setMessage(null);
 
         try
         {
-            await operation();
+            const snapshot = await sharedDatasetClient.loadDataset();
+            const synchronizedBundle = synchronizeBundleRatings(snapshot.bundle);
+
+            publishedBundleReference.current = synchronizedBundle;
+            setBundle(synchronizedBundle);
+            setIsDirty(false);
+            setHasPublishedThisSession(false);
+            setLastSavedAt(snapshot.updatedAt);
             setStatus('ready');
         }
-        catch (operationError)
+        catch (loadError)
         {
-            setError(describeError(operationError));
+            if (!sharedDatasetClient.isConfigured())
+            {
+                publishedBundleReference.current = CONFIGURATION_FALLBACK_BUNDLE;
+                setBundle(CONFIGURATION_FALLBACK_BUNDLE);
+                setIsDirty(false);
+                setHasPublishedThisSession(false);
+                setMessage('Local mode: configure Supabase to load and publish the shared base dataset.');
+                setStatus('ready');
+                return;
+            }
+
+            setError(describeError(loadError));
             setStatus('error');
-            throw operationError;
-        }
-        finally
-        {
-            operationInFlightRef.current = false;
         }
     }, []);
 
-    const saveTag = useCallback(async (tag: MapTag): Promise<void> =>
+    useEffect(() =>
     {
-        await runOperation(async () =>
-        {
-            const dataAccess = requireDataAccess();
+        void loadSharedDataset();
+    }, [loadSharedDataset]);
 
+    const requireAvailableOperation = useCallback((): void =>
+    {
+        if (operationInFlightReference.current)
+        {
+            throw new Error('Another shared data operation is still in progress.');
+        }
+    }, []);
+
+    const updateDraft = useCallback((updater: (current: AppDataBundle) => AppDataBundle): void =>
+    {
+        requireAvailableOperation();
+        setBundle((current) => parseAppDataBundle(updater(current)));
+        setIsDirty(true);
+        setError(null);
+        setMessage(canPublish
+            ? 'Local changes are ready. Click Save to publish them as the shared base.'
+            : 'Local changes affect only this browser unless an administrator publishes them.');
+        setStatus('ready');
+    }, [canPublish, requireAvailableOperation]);
+
+    const saveTag = useCallback((tag: MapTag): Promise<void> =>
+    {
+        updateDraft((current) =>
+        {
             if (tag.type === 'university')
             {
-                await dataAccess.universities.save(tag);
-                setBundle((current) => ({
-                    ...current,
-                    universities: upsertRecord(current.universities, tag),
-                }));
+                return { ...current, universities: upsertRecord(current.universities, tag) };
             }
-            else if (tag.type === 'company')
+
+            if (tag.type === 'company')
             {
-                await dataAccess.companies.save(tag);
-                setBundle((current) => ({
-                    ...current,
-                    companies: upsertRecord(current.companies, tag),
-                }));
+                return { ...current, companies: upsertRecord(current.companies, tag) };
             }
-            else
-            {
-                await dataAccess.notes.save(tag);
-                setBundle((current) => ({
-                    ...current,
-                    notes: upsertRecord(current.notes ?? [], tag),
-                }));
-            }
-        });
-    }, [requireDataAccess, runOperation]);
 
-    const deleteTag = useCallback(async (tag: MapTag): Promise<void> =>
+            return { ...current, notes: upsertRecord(current.notes ?? [], tag) };
+        });
+        return Promise.resolve();
+    }, [updateDraft]);
+
+    const deleteTag = useCallback((tag: MapTag): Promise<void> =>
     {
-        await runOperation(async () =>
+        updateDraft((current) => ({
+            ...current,
+            universities: current.universities.filter((item) => item.id !== tag.id),
+            companies: current.companies.filter((item) => item.id !== tag.id),
+            notes: (current.notes ?? []).filter((item) => item.id !== tag.id),
+        }));
+        return Promise.resolve();
+    }, [updateDraft]);
+
+    const saveCountryOverlay = useCallback((overlay: CountryOverlay): Promise<void> =>
+    {
+        updateDraft((current) => ({
+            ...current,
+            countryOverlays: upsertRecord(current.countryOverlays, overlay),
+        }));
+        return Promise.resolve();
+    }, [updateDraft]);
+
+    const deleteCountryOverlay = useCallback((overlayId: string): Promise<void> =>
+    {
+        updateDraft((current) => ({
+            ...current,
+            countryOverlays: current.countryOverlays.filter((item) => item.id !== overlayId),
+        }));
+        return Promise.resolve();
+    }, [updateDraft]);
+
+    const importJson = useCallback((json: string, mode: ImportMode): Promise<void> =>
+    {
+        requireAvailableOperation();
+        const importedBundle = prepareImportedBundle(parseImportJson(json), parseAppDataBundle);
+        const nextBundle = mode === 'merge' ? mergeBundles(bundle, importedBundle) : importedBundle;
+
+        setBundle(nextBundle);
+        setIsDirty(true);
+        setError(null);
+        setMessage(canPublish
+            ? 'The import is in your working copy. Click Save to publish it as the shared base.'
+            : 'The import is in your local working copy and has not changed the shared base.');
+        setStatus('ready');
+        return Promise.resolve();
+    }, [bundle, canPublish, requireAvailableOperation]);
+
+    const exportJson = useCallback((): Promise<string> =>
+    {
+        return Promise.resolve(serializeBundle(bundle, true));
+    }, [bundle]);
+
+    const clearAll = useCallback((): Promise<void> =>
+    {
+        updateDraft((current) => ({
+            ...current,
+            exportedAt: new Date().toISOString(),
+            universities: [],
+            companies: [],
+            notes: [],
+            countryOverlays: [],
+        }));
+        return Promise.resolve();
+    }, [updateDraft]);
+
+    const saveSharedDataset = useCallback(async (): Promise<void> =>
+    {
+        if (!canPublish)
         {
-            const dataAccess = requireDataAccess();
+            throw new Error('Administrator login is required to publish the shared base dataset.');
+        }
 
-            if (tag.type === 'university')
-            {
-                await dataAccess.universities.delete(tag.id);
-                setBundle((current) => ({
-                    ...current,
-                    universities: current.universities.filter((item) => item.id !== tag.id),
-                }));
-            }
-            else if (tag.type === 'company')
-            {
-                await dataAccess.companies.delete(tag.id);
-                setBundle((current) => ({
-                    ...current,
-                    companies: current.companies.filter((item) => item.id !== tag.id),
-                }));
-            }
-            else
-            {
-                await dataAccess.notes.delete(tag.id);
-                setBundle((current) => ({
-                    ...current,
-                    notes: (current.notes ?? []).filter((item) => item.id !== tag.id),
-                }));
-            }
-        });
-    }, [requireDataAccess, runOperation]);
+        requireAvailableOperation();
+        operationInFlightReference.current = true;
+        setStatus('saving');
+        setError(null);
+        setMessage(null);
 
-    const saveCountryOverlay = useCallback(async (overlay: CountryOverlay): Promise<void> =>
-    {
-        await runOperation(async () =>
+        try
         {
-            const dataAccess = requireDataAccess();
-            await dataAccess.countryOverlays.save(overlay);
-            setBundle((current) => ({
-                ...current,
-                countryOverlays: upsertRecord(current.countryOverlays, overlay),
-            }));
-        });
-    }, [requireDataAccess, runOperation]);
+            const bundleToSave = parseAppDataBundle({
+                ...bundle,
+                exportedAt: new Date().toISOString(),
+            });
+            const snapshot = await sharedDatasetClient.saveDataset(bundleToSave);
 
-    const deleteCountryOverlay = useCallback(async (overlayId: string): Promise<void> =>
-    {
-        await runOperation(async () =>
+            publishedBundleReference.current = snapshot.bundle;
+            setBundle(snapshot.bundle);
+            setIsDirty(false);
+            setHasPublishedThisSession(true);
+            setLastSavedAt(snapshot.updatedAt);
+            setMessage('Shared dataset saved successfully. Everyone will see it after reload or refresh.');
+            setStatus('ready');
+        }
+        catch (saveError)
         {
-            const dataAccess = requireDataAccess();
-            await dataAccess.countryOverlays.delete(overlayId);
-            setBundle((current) => ({
-                ...current,
-                countryOverlays: current.countryOverlays.filter((item) => item.id !== overlayId),
-            }));
-        });
-    }, [requireDataAccess, runOperation]);
-
-    const importJson = useCallback(async (json: string, mode: ImportMode): Promise<void> =>
-    {
-        await runOperation(async () =>
+            setError(describeError(saveError));
+            setStatus('error');
+            throw saveError;
+        }
+        finally
         {
-            const dataAccess = requireDataAccess();
-            await dataAccess.importJson(json, { mode });
-            setBundle(await loadCurrentBundle(dataAccess));
-        });
-    }, [requireDataAccess, runOperation]);
-
-    const exportJson = useCallback(async (): Promise<string> =>
-    {
-        return requireDataAccess().exportJson(true);
-    }, [requireDataAccess]);
-
-    const clearAll = useCallback(async (): Promise<void> =>
-    {
-        await runOperation(async () =>
-        {
-            const dataAccess = requireDataAccess();
-            await dataAccess.clearAll();
-            setBundle(await loadCurrentBundle(dataAccess));
-        });
-    }, [requireDataAccess, runOperation]);
+            operationInFlightReference.current = false;
+        }
+    }, [bundle, canPublish, requireAvailableOperation]);
 
     return {
         bundle,
@@ -326,8 +338,15 @@ export function useAtlasData(): UseAtlasDataResult
         deleteTag,
         error,
         exportJson,
+        hasPublishedThisSession,
         importJson,
+        isDirty,
+        isSharedConfigured: sharedDatasetClient.isConfigured(),
+        lastSavedAt,
+        message,
+        refetch: loadSharedDataset,
         saveCountryOverlay,
+        saveSharedDataset,
         saveTag,
         status,
     };
