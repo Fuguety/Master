@@ -120,10 +120,12 @@ where user_id = (select id from auth.users where lower(email) = lower('admin@atl
 The checked-in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) builds Vite with `VITE_BASE_PATH=/Master/`, uploads `dist`, and deploys it through GitHub Pages.
 
 1. Push the repository to `Fuguety/Master` with the deployment branch named `main`.
-2. In **GitHub → Settings → Secrets and variables → Actions → Variables**, add repository variables named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Use the same public values from Supabase. Do not create a service-role variable.
+2. In **GitHub → Settings → Secrets and variables → Actions → Variables**, add repository variables named `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. Use the same public values from Supabase. The workflow also accepts Actions secrets with those names, although variables are appropriate because both values are public browser configuration. Do not create a service-role variable.
 3. In **Settings → Pages → Build and deployment**, select **GitHub Actions** as the source.
 4. Push to `main`, or open **Actions → Deploy GitHub Pages → Run workflow**.
 5. After both jobs succeed, open `https://fuguety.github.io/Master/`.
+
+If the two Supabase values are absent, the workflow emits a warning and still deploys. The site then runs in **Local only** mode with bundled data; shared reads, administrator login, and publishing remain unavailable until both values are configured and the workflow is rerun.
 
 For a renamed repository, change `VITE_BASE_PATH` in the workflow to `/<repository-name>/`. For a root user/organization site or an appropriate custom domain, use `/`.
 
